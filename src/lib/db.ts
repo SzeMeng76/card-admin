@@ -141,8 +141,8 @@ export const db = {
       getDb().prepare(`SELECT t.*, c.card_number, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id WHERE t.card_id = ? ORDER BY t.created_at DESC`).all(cardId) as any[],
     listByOwner: (ownerId: number) =>
       getDb().prepare(`SELECT t.*, c.card_number FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
-    create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number) =>
-      getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by) VALUES (?, ?, ?, ?, ?, ?)').run(cardId, type, amount, balanceAfter, note, createdBy),
+    create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number, createdAt?: string | null) =>
+      getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))').run(cardId, type, amount, balanceAfter, note, createdBy, createdAt ?? null),
     update: (id: number, type: string, amount: number, balanceAfter: number, note: string) =>
       getDb().prepare('UPDATE transactions SET type = ?, amount = ?, balance_after = ?, note = ? WHERE id = ?').run(type, amount, balanceAfter, note, id),
     delete: (id: number) =>

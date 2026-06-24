@@ -40,7 +40,7 @@ export default function CardsPage() {
 
   const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD' })
   const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD' })
-  const [balanceForm, setBalanceForm] = useState({ amount: '', note: '' })
+  const [balanceForm, setBalanceForm] = useState({ amount: '', note: '', createdAt: '' })
 
   async function load() {
     const [c, u] = await Promise.all([
@@ -136,10 +136,11 @@ export default function CardsPage() {
         type: balanceType,
         amount: Number(balanceForm.amount),
         note: balanceForm.note,
+        ...(balanceForm.createdAt ? { createdAt: balanceForm.createdAt } : {}),
       }),
     })
     setBalanceModal(null)
-    setBalanceForm({ amount: '', note: '' })
+    setBalanceForm({ amount: '', note: '', createdAt: '' })
     load()
   }
 
@@ -243,6 +244,10 @@ export default function CardsPage() {
               <div className="space-y-1">
                 <Label>{t('common.note')}</Label>
                 <Input value={balanceForm.note} onChange={e => setBalanceForm(f => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>交易时间（可选）</Label>
+                <Input type="datetime-local" value={balanceForm.createdAt} onChange={e => setBalanceForm(f => ({ ...f, createdAt: e.target.value }))} />
               </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit">{t('common.confirm')}</Button>

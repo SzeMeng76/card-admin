@@ -27,7 +27,7 @@ export default function TransactionsPage() {
   const [cards, setCards] = useState<Card[]>([])
   const [showAdd, setShowAdd] = useState(false)
   const [editModal, setEditModal] = useState<Transaction | null>(null)
-  const [form, setForm] = useState({ cardId: '', type: 'manual', amount: '', note: '' })
+  const [form, setForm] = useState({ cardId: '', type: 'manual', amount: '', note: '', createdAt: '' })
   const [editForm, setEditForm] = useState({ type: 'manual', amount: '', note: '' })
 
   async function load() {
@@ -51,10 +51,11 @@ export default function TransactionsPage() {
         type: form.type,
         amount: Number(form.amount),
         note: form.note,
+        ...(form.createdAt ? { createdAt: form.createdAt } : {}),
       }),
     })
     setShowAdd(false)
-    setForm({ cardId: '', type: 'manual', amount: '', note: '' })
+    setForm({ cardId: '', type: 'manual', amount: '', note: '', createdAt: '' })
     load()
   }
 
@@ -178,6 +179,10 @@ export default function TransactionsPage() {
               <div className="space-y-1">
                 <Label>{t('common.note')}</Label>
                 <Input value={form.note} onChange={e => setForm(f => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>交易时间（可选）</Label>
+                <Input type="datetime-local" value={form.createdAt} onChange={e => setForm(f => ({ ...f, createdAt: e.target.value }))} />
               </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit">{t('common.save')}</Button>
