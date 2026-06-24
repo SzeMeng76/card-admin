@@ -59,7 +59,9 @@
     "addSuccess": "卡片添加成功",
     "balanceUpdated": "余额更新成功",
     "amount": "金额",
-    "initialBalance": "初始余额"
+    "initialBalance": "初始余额",
+    "cvc": "CVC",
+    "cardholder": "持卡人"
   },
   "users": {
     "title": "用户管理",
@@ -81,7 +83,8 @@
     "operator": "操作人",
     "topup": "充值",
     "deduct": "扣减",
-    "manual": "手动"
+    "manual": "手动",
+    "addRecord": "添加记录"
   },
   "portal": {
     "title": "我的卡片",
@@ -91,6 +94,9 @@
     "balance": "余额",
     "status": "状态",
     "expiresAt": "到期时间",
-    "noCards": "暂无卡片"
+    "noCards": "暂无卡片",
+    "expires": "到期",
+    "cardholder": "持卡人",
+    "clickDetails": "点击查看详情"
   }
 }

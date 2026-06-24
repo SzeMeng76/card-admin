@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
   const session = await getSession()
   if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { cardNumber, ownerId, balance, note, expiresAt } = await request.json()
+  const { cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder } = await request.json()
   if (!cardNumber) return NextResponse.json({ error: 'Card number required' }, { status: 400 })
 
   try {
-    db.cards.create(cardNumber, ownerId || null, balance || 0, note || '', expiresAt || null)
+    db.cards.create(cardNumber, ownerId || null, balance || 0, note || '', expiresAt || null, cvc || null, cardholder || null)
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Card number already exists' }, { status: 409 })

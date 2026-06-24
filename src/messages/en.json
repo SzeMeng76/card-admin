@@ -59,7 +59,9 @@
     "addSuccess": "Card added successfully",
     "balanceUpdated": "Balance updated",
     "amount": "Amount",
-    "initialBalance": "Initial Balance"
+    "initialBalance": "Initial Balance",
+    "cvc": "CVC",
+    "cardholder": "Cardholder"
   },
   "users": {
     "title": "User Management",
@@ -81,7 +83,8 @@
     "operator": "Operator",
     "topup": "Top Up",
     "deduct": "Deduct",
-    "manual": "Manual"
+    "manual": "Manual",
+    "addRecord": "Add Record"
   },
   "portal": {
     "title": "My Cards",
@@ -91,6 +94,9 @@
     "balance": "Balance",
     "status": "Status",
     "expiresAt": "Expires At",
-    "noCards": "No cards found"
+    "noCards": "No cards found",
+    "expires": "Expires",
+    "cardholder": "Cardholder",
+    "clickDetails": "Click for details"
   }
 }

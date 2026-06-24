@@ -49,6 +49,16 @@ function initSchema(db: Database.Database) {
     );
   `)
 
+  // Migrate: add cvc and cardholder columns if missing
+  const cardCols = db.prepare(`PRAGMA table_info(cards)`).all() as any[]
+  const colNames = cardCols.map((c: any) => c.name)
+  if (!colNames.includes('cvc')) {
+    db.exec(`ALTER TABLE cards ADD COLUMN cvc TEXT`)
+  }
+  if (!colNames.includes('cardholder')) {
+    db.exec(`ALTER TABLE cards ADD COLUMN cardholder TEXT`)
+  }
+
   // Seed default admin if not exists
   const admin = db.prepare('SELECT id FROM users WHERE role = ?').get('admin')
   if (!admin) {
@@ -82,8 +92,8 @@ export const db = {
       getDb().prepare(`SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.owner_id = ? ORDER BY c.created_at DESC`).all(ownerId) as any[],
     findById: (id: number) =>
       getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(id) as any,
-    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null) =>
-      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at) VALUES (?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt),
+    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null) =>
+      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder) VALUES (?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder),
     updateStatus: (id: number, status: string) =>
       getDb().prepare('UPDATE cards SET status = ? WHERE id = ?').run(status, id),
     updateBalance: (id: number, balance: number) =>

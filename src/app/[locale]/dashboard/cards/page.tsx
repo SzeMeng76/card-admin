@@ -13,6 +13,8 @@ interface Card {
   balance: number
   status: string
   note: string
+  cvc: string | null
+  cardholder: string | null
   created_at: string
   expires_at: string | null
 }
@@ -31,7 +33,7 @@ export default function CardsPage() {
   const [balanceModal, setBalanceModal] = useState<Card | null>(null)
   const [balanceType, setBalanceType] = useState<'topup' | 'deduct'>('topup')
 
-  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '' })
+  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '' })
   const [balanceForm, setBalanceForm] = useState({ amount: '', note: '' })
 
   async function load() {
@@ -56,10 +58,12 @@ export default function CardsPage() {
         balance: Number(form.balance),
         note: form.note,
         expiresAt: form.expiresAt || null,
+        cvc: form.cvc || null,
+        cardholder: form.cardholder || null,
       }),
     })
     setShowAdd(false)
-    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '' })
+    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '' })
     load()
   }
 
@@ -154,7 +158,15 @@ export default function CardsPage() {
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.expiresAt')}</Label>
-                <Input type="date" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))} />
+                <Input type="month" value={form.expiresAt} onChange={e => setForm(f => ({ ...f, expiresAt: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.cvc')}</Label>
+                <Input value={form.cvc} maxLength={4} onChange={e => setForm(f => ({ ...f, cvc: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.cardholder')}</Label>
+                <Input value={form.cardholder} onChange={e => setForm(f => ({ ...f, cardholder: e.target.value }))} />
               </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit">{t('common.save')}</Button>
