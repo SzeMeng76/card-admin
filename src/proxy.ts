@@ -9,7 +9,7 @@ const intlMiddleware = createMiddleware({
 
 const PUBLIC_PATHS = ['/login']
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const pathWithoutLocale = pathname.replace(/^\/(zh|en)/, '') || '/'
   const isPublic = PUBLIC_PATHS.some(p => pathWithoutLocale.startsWith(p))

@@ -39,10 +39,21 @@ export async function PATCH(request: NextRequest) {
   const session = await getSession()
   if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { id, password } = await request.json()
-  if (!id || !password) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+  const body = await request.json()
+  const { id } = body
 
-  const hash = bcrypt.hashSync(password, 10)
-  db.users.updatePassword(id, hash)
-  return NextResponse.json({ ok: true })
+  if (!id) return NextResponse.json({ error: 'Missing id' }, { status: 400 })
+
+  if ('telegram_id' in body) {
+    db.users.setTelegramId(id, body.telegram_id)
+    return NextResponse.json({ ok: true })
+  }
+
+  if (body.password) {
+    const hash = bcrypt.hashSync(body.password, 10)
+    db.users.updatePassword(id, hash)
+    return NextResponse.json({ ok: true })
+  }
+
+  return NextResponse.json({ error: 'Nothing to update' }, { status: 400 })
 }

@@ -62,6 +62,19 @@ function initSchema(db: Database.Database) {
     db.exec(`ALTER TABLE cards ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'`)
   }
 
+  // Migrate: add telegram_id to users if missing
+  const userCols = db.prepare(`PRAGMA table_info(users)`).all() as any[]
+  const userColNames = userCols.map((c: any) => c.name)
+  if (!userColNames.includes('telegram_id')) {
+    db.exec(`ALTER TABLE users ADD COLUMN telegram_id INTEGER UNIQUE`)
+  }
+  if (!userColNames.includes('telegram_link_token')) {
+    db.exec(`ALTER TABLE users ADD COLUMN telegram_link_token TEXT`)
+  }
+  if (!userColNames.includes('telegram_link_expires')) {
+    db.exec(`ALTER TABLE users ADD COLUMN telegram_link_expires INTEGER`)
+  }
+
   // Seed default admin if not exists
   const admin = db.prepare('SELECT id FROM users WHERE role = ?').get('admin')
   if (!admin) {
@@ -80,13 +93,21 @@ export const db = {
     findById: (id: number) =>
       getDb().prepare('SELECT id, username, role, created_at FROM users WHERE id = ?').get(id) as any,
     list: () =>
-      getDb().prepare('SELECT id, username, role, created_at FROM users ORDER BY created_at DESC').all() as any[],
+      getDb().prepare('SELECT id, username, role, telegram_id, created_at FROM users ORDER BY created_at DESC').all() as any[],
     create: (username: string, passwordHash: string, role = 'user') =>
       getDb().prepare('INSERT INTO users (username, password_hash, role) VALUES (?, ?, ?)').run(username, passwordHash, role),
     updatePassword: (id: number, passwordHash: string) =>
       getDb().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(passwordHash, id),
     delete: (id: number) =>
       getDb().prepare('DELETE FROM users WHERE id = ?').run(id),
+    findByTelegramId: (telegramId: number) =>
+      getDb().prepare('SELECT id, username, role FROM users WHERE telegram_id = ?').get(telegramId) as any,
+    setTelegramId: (userId: number, telegramId: number) =>
+      getDb().prepare('UPDATE users SET telegram_id = ?, telegram_link_token = NULL, telegram_link_expires = NULL WHERE id = ?').run(telegramId, userId),
+    setLinkToken: (userId: number, token: string, expires: number) =>
+      getDb().prepare('UPDATE users SET telegram_link_token = ?, telegram_link_expires = ? WHERE id = ?').run(token, expires, userId),
+    findByLinkToken: (token: string) =>
+      getDb().prepare('SELECT id, username, role FROM users WHERE telegram_link_token = ? AND telegram_link_expires > ?').get(token, Date.now()) as any,
   },
   cards: {
     list: () =>

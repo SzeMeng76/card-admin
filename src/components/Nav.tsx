@@ -22,6 +22,9 @@ export default function Nav({ role, username }: NavProps) {
   const [showChangePw, setShowChangePw] = useState(false)
   const [pwForm, setPwForm] = useState({ current: '', next: '', confirm: '' })
   const [pwError, setPwError] = useState('')
+  const [showTelegram, setShowTelegram] = useState(false)
+  const [tgLink, setTgLink] = useState('')
+  const [tgLoading, setTgLoading] = useState(false)
 
   const adminLinks = [
     { href: `/${locale}/dashboard`, label: t('nav.dashboard') },
@@ -44,6 +47,18 @@ export default function Nav({ role, username }: NavProps) {
     const next = locale === 'zh' ? 'en' : 'zh'
     const newPath = pathname.replace(`/${locale}/`, `/${next}/`)
     router.push(newPath)
+  }
+
+  async function openTelegram() {
+    setShowTelegram(true)
+    setTgLink('')
+    setTgLoading(true)
+    const res = await fetch('/api/telegram')
+    if (res.ok) {
+      const data = await res.json()
+      setTgLink(data.url)
+    }
+    setTgLoading(false)
   }
 
   async function changePassword(e: React.FormEvent) {
@@ -92,6 +107,9 @@ export default function Nav({ role, username }: NavProps) {
             <button onClick={switchLocale} className="text-xs text-zinc-400 hover:text-zinc-600">
               {locale === 'zh' ? 'EN' : '中文'}
             </button>
+            <button onClick={openTelegram} className="text-sm text-zinc-400 hover:text-blue-500 transition-colors" title="绑定 Telegram">
+              TG
+            </button>
             <button onClick={() => setShowChangePw(true)} className="text-sm text-zinc-500 hover:text-zinc-900 transition-colors">
               {username}
             </button>
@@ -101,6 +119,25 @@ export default function Nav({ role, username }: NavProps) {
           </div>
         </div>
       </nav>
+
+      {showTelegram && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h2 className="font-semibold mb-2">绑定 Telegram</h2>
+            <p className="text-sm text-zinc-500 mb-4">点击下方链接，在 Telegram 中完成绑定。链接 5 分钟内有效。</p>
+            {tgLoading && <p className="text-sm text-zinc-400">生成链接中...</p>}
+            {tgLink && (
+              <a href={tgLink} target="_blank" rel="noopener noreferrer"
+                className="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white rounded-lg py-2 text-sm font-medium transition-colors">
+                打开 Telegram 完成绑定
+              </a>
+            )}
+            <div className="flex gap-2 mt-4">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setShowTelegram(false)}>关闭</Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showChangePw && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">

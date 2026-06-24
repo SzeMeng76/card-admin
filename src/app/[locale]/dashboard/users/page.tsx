@@ -10,6 +10,7 @@ interface User {
   username: string
   role: string
   created_at: string
+  telegram_id: number | null
 }
 
 export default function UsersPage() {
@@ -17,6 +18,8 @@ export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([])
   const [showAdd, setShowAdd] = useState(false)
   const [resetModal, setResetModal] = useState<User | null>(null)
+  const [tgModal, setTgModal] = useState<User | null>(null)
+  const [tgId, setTgId] = useState('')
   const [form, setForm] = useState({ username: '', password: '', role: 'user' })
   const [newPassword, setNewPassword] = useState('')
 
@@ -61,6 +64,19 @@ export default function UsersPage() {
     setNewPassword('')
   }
 
+  async function setTelegramId(e: React.FormEvent) {
+    e.preventDefault()
+    if (!tgModal) return
+    await fetch('/api/users', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: tgModal.id, telegram_id: tgId ? Number(tgId) : null }),
+    })
+    setTgModal(null)
+    setTgId('')
+    load()
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -101,6 +117,29 @@ export default function UsersPage() {
         </div>
       )}
 
+      {tgModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h2 className="font-semibold mb-1">绑定 Telegram — {tgModal.username}</h2>
+            <p className="text-xs text-zinc-400 mb-4">填入用户的 Telegram 数字 ID，留空则解除绑定。</p>
+            <form onSubmit={setTelegramId} className="space-y-3">
+              <div className="space-y-1">
+                <Label>Telegram ID</Label>
+                <Input
+                  placeholder="例如：123456789"
+                  value={tgId}
+                  onChange={e => setTgId(e.target.value.replace(/\D/g, ''))}
+                />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button type="submit">{t('common.save')}</Button>
+                <Button type="button" variant="outline" onClick={() => setTgModal(null)}>{t('common.cancel')}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {resetModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
@@ -123,7 +162,7 @@ export default function UsersPage() {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
-              {[t('common.username'), t('users.role'), t('common.createdAt'), t('common.actions')].map(h => (
+              {[t('common.username'), t('users.role'), 'Telegram', t('common.createdAt'), t('common.actions')].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
               ))}
             </tr>
@@ -137,9 +176,13 @@ export default function UsersPage() {
                     {t(`users.${user.role as 'admin' | 'user'}`)}
                   </span>
                 </td>
+                <td className="px-4 py-3 text-zinc-400 text-xs">
+                  {user.telegram_id ? <span className="text-blue-500">{user.telegram_id}</span> : '—'}
+                </td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{user.created_at.split('T')[0]}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => { setTgModal(user); setTgId(user.telegram_id ? String(user.telegram_id) : '') }}>TG</Button>
                     <Button size="sm" variant="outline" onClick={() => setResetModal(user)}>{t('users.resetPassword')}</Button>
                     {user.role !== 'admin' && (
                       <Button size="sm" variant="destructive" onClick={() => deleteUser(user.id)}>{t('common.delete')}</Button>
