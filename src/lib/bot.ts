@@ -22,8 +22,10 @@ async function sendWelcome(ctx: any, user: any) {
     ? db.transactions.todayAmount()
     : db.transactions.todayAmountByOwner(user.id)
 
+  const tgName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ') || ctx.from.username || user.username
+
   const msg =
-    `👋 欢迎回来，*${user.username}*！\n` +
+    `👋 欢迎回来，*${tgName}*！\n` +
     `🆔 Telegram ID：\`${ctx.from.id}\`\n\n` +
     `━━━━━━━━━━━━━━━\n` +
     `💳 卡片数量：${cards.length} 张\n` +
