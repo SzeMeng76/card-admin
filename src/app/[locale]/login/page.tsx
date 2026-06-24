@@ -30,7 +30,7 @@ export default function LoginPage() {
 
     if (res.ok) {
       const data = await res.json()
-      router.push(`/${locale}/${data.role === 'admin' ? 'dashboard' : 'portal'}`)
+      window.location.href = `/${locale}/${data.role === 'admin' ? 'dashboard' : 'portal'}`
     } else {
       setError(t('login.error'))
       setLoading(false)
