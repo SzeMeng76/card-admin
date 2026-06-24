@@ -50,6 +50,11 @@ export function getBot(): Bot {
   return _bot
 }
 
+function fmtDate(dateStr: string) {
+  const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
+  return d.toLocaleString('zh-MY', { timeZone: 'Asia/Kuala_Lumpur', hour12: false }).slice(0, 16)
+}
+
 function fmtCards(cards: any[]) {
   if (!cards.length) return '没有找到卡片。'
   return cards.map(c =>
@@ -119,7 +124,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额：${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额：${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -183,7 +188,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额: ${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额: ${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -204,7 +209,7 @@ function registerHandlers(bot: Bot) {
     const txns = db.transactions.listByCard(card.id).slice(0, 5)
     const txnText = txns.length
       ? '\n\n最近交易:\n' + txns.map((t: any) =>
-          `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}${t.note ? `  ${t.note}` : ''}`
+          `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}${t.note ? `  ${t.note}` : ''}  🕐 ${fmtDate(t.created_at)}`
         ).join('\n')
       : '\n\n暂无交易记录'
     await ctx.reply(fmtCards([card]) + txnText)
