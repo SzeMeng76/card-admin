@@ -10,7 +10,6 @@ COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
-RUN apk add --no-cache python3 make g++
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
@@ -18,6 +17,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN pnpm run build
 
 FROM base AS runner
+RUN apk add --no-cache python3 make g++
 WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -30,9 +30,12 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Copy native bindings for better-sqlite3
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3/build/Release/better_sqlite3.node \
-    ./node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3/build/Release/better_sqlite3.node
+# Rebuild better-sqlite3 native binding for runtime arch
+COPY --from=deps /app/node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3 \
+    ./node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3
+RUN cd node_modules/.pnpm/better-sqlite3@11.10.0/node_modules/better-sqlite3 && npm rebuild better-sqlite3
+
+RUN chown -R nextjs:nodejs /app/node_modules
 
 USER nextjs
 EXPOSE 3000
