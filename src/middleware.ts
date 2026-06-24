@@ -34,7 +34,7 @@ export async function middleware(request: NextRequest) {
     }
 
     try {
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'changeme')
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'changeme-set-in-env')
       const { payload } = await jwtVerify(token, secret)
       const role = payload.role as string
 
