@@ -326,7 +326,7 @@ export default function CardsPage() {
                     {t(`common.${card.status as 'active' | 'frozen'}`)}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-zinc-400 text-xs">{card.expires_at ? card.expires_at.split('T')[0] : '—'}</td>
+                <td className="px-4 py-3 text-zinc-400 text-xs">{card.expires_at ? (() => { const p = card.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })() : '—'}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{card.note || '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">

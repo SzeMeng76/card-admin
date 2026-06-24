@@ -67,7 +67,12 @@ function fmtDate(dateStr: string) {
 function fmtCards(cards: any[]) {
   if (!cards.length) return '没有找到卡片。'
   return cards.map(c =>
-    `💳 ${c.card_number}\n余额: ${c.currency} ${Number(c.balance).toFixed(2)}\n状态: ${c.status}${c.cardholder ? `\n持卡人: ${c.cardholder}` : ''}`
+    `💳 *${c.card_number}*\n` +
+    `余额: ${c.currency} ${Number(c.balance).toFixed(2)}\n` +
+    `状态: ${c.status === 'active' ? '✅ 正常' : '🔒 封禁'}` +
+    (c.cardholder ? `\n持卡人: ${c.cardholder}` : '') +
+    (c.expires_at ? `\n有效期: ${(() => { const p = c.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })()}` : '') +
+    (c.cvc ? `\nCVC: ${c.cvc}` : '')
   ).join('\n\n')
 }
 
