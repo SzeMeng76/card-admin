@@ -283,7 +283,8 @@ function registerHandlers(bot: Bot) {
 }
 
 export function getBotWebhookHandler() {
-  return webhookCallback(getBot(), 'std/http')
+  const secret = process.env.TELEGRAM_WEBHOOK_SECRET
+  return webhookCallback(getBot(), 'std/http', { secretToken: secret })
 }
 
 export async function startPolling() {
