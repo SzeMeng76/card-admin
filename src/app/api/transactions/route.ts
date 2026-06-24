@@ -43,9 +43,21 @@ export async function PATCH(request: NextRequest) {
   const { id, type, amount, note } = await request.json()
   if (!id || !type || amount === undefined) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
 
-  const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
-  db.transactions.update(id, type, delta, note || '')
-  return NextResponse.json({ ok: true })
+  const tx = db.transactions.findById(id)
+  if (!tx) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const card = db.cards.findById(tx.card_id)
+  if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 404 })
+
+  // Reverse old amount, apply new amount
+  const newDelta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
+  const newBalance = card.balance - tx.amount + newDelta
+
+  if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+
+  db.cards.updateBalance(tx.card_id, newBalance)
+  db.transactions.update(id, type, newDelta, note || '')
+  return NextResponse.json({ ok: true, balance: newBalance })
 }
 
 export async function DELETE(request: NextRequest) {
@@ -53,6 +65,17 @@ export async function DELETE(request: NextRequest) {
   if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const { id } = await request.json()
+
+  const tx = db.transactions.findById(id)
+  if (!tx) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+  const card = db.cards.findById(tx.card_id)
+  if (card) {
+    // Reverse the transaction's effect on balance
+    const newBalance = card.balance - tx.amount
+    if (newBalance >= 0) db.cards.updateBalance(tx.card_id, newBalance)
+  }
+
   db.transactions.delete(id)
   return NextResponse.json({ ok: true })
 }
