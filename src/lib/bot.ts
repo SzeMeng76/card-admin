@@ -52,7 +52,14 @@ export function getBot(): Bot {
 
 function fmtDate(dateStr: string) {
   const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
-  return d.toLocaleString('zh-MY', { timeZone: 'Asia/Kuala_Lumpur', hour12: false }).slice(0, 16)
+  const options: Intl.DateTimeFormatOptions = {
+    timeZone: 'Asia/Kuala_Lumpur',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }
+  const parts = new Intl.DateTimeFormat('en-GB', options).formatToParts(d)
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? ''
+  return `${get('year')}-${get('month')}-${get('day')} ${get('hour')}:${get('minute')}`
 }
 
 function fmtCards(cards: any[]) {
