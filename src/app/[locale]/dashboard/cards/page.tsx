@@ -30,10 +30,12 @@ export default function CardsPage() {
   const [users, setUsers] = useState<User[]>([])
   const [search, setSearch] = useState('')
   const [showAdd, setShowAdd] = useState(false)
+  const [editModal, setEditModal] = useState<Card | null>(null)
   const [balanceModal, setBalanceModal] = useState<Card | null>(null)
   const [balanceType, setBalanceType] = useState<'topup' | 'deduct'>('topup')
 
   const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '' })
+  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '' })
   const [balanceForm, setBalanceForm] = useState({ amount: '', note: '' })
 
   async function load() {
@@ -73,6 +75,36 @@ export default function CardsPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: card.id, status: card.status === 'active' ? 'frozen' : 'active' }),
     })
+    load()
+  }
+
+  function openEdit(card: Card) {
+    setEditForm({
+      cvc: card.cvc || '',
+      cardholder: card.cardholder || '',
+      expiresAt: card.expires_at ? card.expires_at.split('T')[0].slice(0, 7) : '',
+      note: card.note || '',
+      ownerId: card.owner_id ? String(card.owner_id) : '',
+    })
+    setEditModal(card)
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editModal) return
+    await fetch('/api/cards', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: editModal.id,
+        cvc: editForm.cvc || null,
+        cardholder: editForm.cardholder || null,
+        expiresAt: editForm.expiresAt || null,
+        note: editForm.note,
+        ownerId: editForm.ownerId ? Number(editForm.ownerId) : null,
+      }),
+    })
+    setEditModal(null)
     load()
   }
 
@@ -205,6 +237,52 @@ export default function CardsPage() {
         </div>
       )}
 
+      )}
+
+      {/* Edit Card Modal */}
+      {editModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl">
+            <h2 className="font-semibold mb-1">{t('common.edit')} — <span className="font-mono text-sm">{editModal.card_number}</span></h2>
+            <form onSubmit={saveEdit} className="space-y-3 mt-4">
+              <div className="space-y-1">
+                <Label>{t('cards.cardholder')}</Label>
+                <Input value={editForm.cardholder} onChange={e => setEditForm(f => ({ ...f, cardholder: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.cvc')}</Label>
+                <Input value={editForm.cvc} maxLength={4} onChange={e => setEditForm(f => ({ ...f, cvc: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.expiresAt')}</Label>
+                <Input type="month" value={editForm.expiresAt} onChange={e => setEditForm(f => ({ ...f, expiresAt: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.owner')}</Label>
+                <select
+                  className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+                  value={editForm.ownerId}
+                  onChange={e => setEditForm(f => ({ ...f, ownerId: e.target.value }))}
+                >
+                  <option value="">{t('cards.noOwner')}</option>
+                  {users.filter(u => (u as any).role !== 'admin').map(u => (
+                    <option key={u.id} value={u.id}>{u.username}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label>{t('common.note')}</Label>
+                <Input value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button type="submit">{t('common.save')}</Button>
+                <Button type="button" variant="outline" onClick={() => setEditModal(null)}>{t('common.cancel')}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
@@ -230,6 +308,7 @@ export default function CardsPage() {
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <Button size="sm" variant="outline" onClick={() => { setBalanceModal(card); setBalanceType('topup') }}>{t('cards.topup')}</Button>
+                    <Button size="sm" variant="outline" onClick={() => openEdit(card)}>{t('common.edit')}</Button>
                     <Button size="sm" variant="outline" onClick={() => toggleStatus(card)}>
                       {card.status === 'active' ? t('cards.freeze') : t('cards.unfreeze')}
                     </Button>

@@ -96,6 +96,8 @@ export const db = {
       getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder) VALUES (?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder),
     updateStatus: (id: number, status: string) =>
       getDb().prepare('UPDATE cards SET status = ? WHERE id = ?').run(status, id),
+    updateInfo: (id: number, cvc: string | null, cardholder: string | null, expiresAt: string | null, note: string, ownerId: number | null) =>
+      getDb().prepare('UPDATE cards SET cvc = ?, cardholder = ?, expires_at = ?, note = ?, owner_id = ? WHERE id = ?').run(cvc, cardholder, expiresAt, note, ownerId, id),
     updateBalance: (id: number, balance: number) =>
       getDb().prepare('UPDATE cards SET balance = ? WHERE id = ?').run(balance, id),
     delete: (id: number) =>

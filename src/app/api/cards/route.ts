@@ -31,8 +31,13 @@ export async function PATCH(request: NextRequest) {
   const session = await getSession()
   if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { id, status } = await request.json()
-  db.cards.updateStatus(id, status)
+  const body = await request.json()
+
+  if (body.status !== undefined) {
+    db.cards.updateStatus(body.id, body.status)
+  } else {
+    db.cards.updateInfo(body.id, body.cvc || null, body.cardholder || null, body.expiresAt || null, body.note || '', body.ownerId || null)
+  }
   return NextResponse.json({ ok: true })
 }
 
