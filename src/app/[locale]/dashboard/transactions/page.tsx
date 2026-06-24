@@ -70,13 +70,18 @@ export default function TransactionsPage() {
   async function saveEdit(e: React.FormEvent) {
     e.preventDefault()
     if (!editModal) return
-    await fetch('/api/transactions', {
+    const res = await fetch('/api/transactions', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: editModal.id, type: editForm.type, amount: Number(editForm.amount), note: editForm.note }),
     })
+    if (!res.ok) {
+      const err = await res.json()
+      alert(err.error || 'Error')
+      return
+    }
     setEditModal(null)
-    load()
+    await load()
   }
 
   async function deleteTx(id: number) {

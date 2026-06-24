@@ -21,7 +21,13 @@
     "actions": "Actions",
     "createdAt": "Created At",
     "note": "Note",
-    "back": "Back"
+    "back": "Back",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm New Password",
+    "passwordMismatch": "Passwords do not match",
+    "wrongPassword": "Current password is incorrect"
   },
   "login": {
     "title": "Card Admin",

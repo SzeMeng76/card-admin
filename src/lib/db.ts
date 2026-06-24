@@ -117,8 +117,8 @@ export const db = {
       getDb().prepare(`SELECT t.*, c.card_number FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
     create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number) =>
       getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by) VALUES (?, ?, ?, ?, ?, ?)').run(cardId, type, amount, balanceAfter, note, createdBy),
-    update: (id: number, type: string, amount: number, note: string) =>
-      getDb().prepare('UPDATE transactions SET type = ?, amount = ?, note = ? WHERE id = ?').run(type, amount, note, id),
+    update: (id: number, type: string, amount: number, balanceAfter: number, note: string) =>
+      getDb().prepare('UPDATE transactions SET type = ?, amount = ?, balance_after = ?, note = ? WHERE id = ?').run(type, amount, balanceAfter, note, id),
     delete: (id: number) =>
       getDb().prepare('DELETE FROM transactions WHERE id = ?').run(id),
     findById: (id: number) =>

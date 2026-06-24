@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest) {
   if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
 
   db.cards.updateBalance(tx.card_id, newBalance)
-  db.transactions.update(id, type, newDelta, note || '')
+  db.transactions.update(id, type, newDelta, newBalance, note || '')
   return NextResponse.json({ ok: true, balance: newBalance })
 }
 
