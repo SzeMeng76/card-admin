@@ -26,7 +26,9 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [cards, setCards] = useState<Card[]>([])
   const [showAdd, setShowAdd] = useState(false)
+  const [editModal, setEditModal] = useState<Transaction | null>(null)
   const [form, setForm] = useState({ cardId: '', type: 'manual', amount: '', note: '' })
+  const [editForm, setEditForm] = useState({ type: 'manual', amount: '', note: '' })
 
   async function load() {
     const [tx, c] = await Promise.all([
@@ -53,6 +55,37 @@ export default function TransactionsPage() {
     })
     setShowAdd(false)
     setForm({ cardId: '', type: 'manual', amount: '', note: '' })
+    load()
+  }
+
+  function openEdit(tx: Transaction) {
+    setEditForm({
+      type: tx.type,
+      amount: String(Math.abs(tx.amount)),
+      note: tx.note || '',
+    })
+    setEditModal(tx)
+  }
+
+  async function saveEdit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editModal) return
+    await fetch('/api/transactions', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editModal.id, type: editForm.type, amount: Number(editForm.amount), note: editForm.note }),
+    })
+    setEditModal(null)
+    load()
+  }
+
+  async function deleteTx(id: number) {
+    if (!confirm(t('transactions.confirmDelete'))) return
+    await fetch('/api/transactions', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
     load()
   }
 
@@ -150,11 +183,42 @@ export default function TransactionsPage() {
         </div>
       )}
 
+      {/* Edit Transaction Modal */}
+      {editModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+            <h2 className="font-semibold mb-4">{t('common.edit')} — <span className="font-mono text-xs">{editModal.card_number}</span></h2>
+            <form onSubmit={saveEdit} className="space-y-3">
+              <div className="space-y-1">
+                <Label>{t('transactions.type')}</Label>
+                <select className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" value={editForm.type} onChange={e => setEditForm(f => ({ ...f, type: e.target.value }))}>
+                  <option value="manual">{t('transactions.manual')}</option>
+                  <option value="topup">{t('transactions.topup')}</option>
+                  <option value="deduct">{t('transactions.deduct')}</option>
+                </select>
+              </div>
+              <div className="space-y-1">
+                <Label>{t('transactions.amount')}</Label>
+                <Input type="number" min="0.01" step="0.01" value={editForm.amount} onChange={e => setEditForm(f => ({ ...f, amount: e.target.value }))} required />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('common.note')}</Label>
+                <Input value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="flex gap-2 pt-2">
+                <Button type="submit">{t('common.save')}</Button>
+                <Button type="button" variant="outline" onClick={() => setEditModal(null)}>{t('common.cancel')}</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
-              {[t('transactions.cardNumber'), t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt')].map(h => (
+              {[t('transactions.cardNumber'), t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt'), t('common.actions')].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
               ))}
             </tr>
@@ -175,6 +239,12 @@ export default function TransactionsPage() {
                 <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
                 <td className="px-4 py-3 text-zinc-500 text-xs">{tx.created_by_name || '—'}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at).toLocaleString()}</td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => openEdit(tx)}>{t('common.edit')}</Button>
+                    <Button size="sm" variant="destructive" onClick={() => deleteTx(tx.id)}>{t('common.delete')}</Button>
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>

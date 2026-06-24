@@ -58,6 +58,9 @@ function initSchema(db: Database.Database) {
   if (!colNames.includes('cardholder')) {
     db.exec(`ALTER TABLE cards ADD COLUMN cardholder TEXT`)
   }
+  if (!colNames.includes('currency')) {
+    db.exec(`ALTER TABLE cards ADD COLUMN currency TEXT NOT NULL DEFAULT 'USD'`)
+  }
 
   // Seed default admin if not exists
   const admin = db.prepare('SELECT id FROM users WHERE role = ?').get('admin')
@@ -92,12 +95,12 @@ export const db = {
       getDb().prepare(`SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.owner_id = ? ORDER BY c.created_at DESC`).all(ownerId) as any[],
     findById: (id: number) =>
       getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(id) as any,
-    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null) =>
-      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder) VALUES (?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder),
+    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null, currency: string) =>
+      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder, currency) VALUES (?, ?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder, currency),
     updateStatus: (id: number, status: string) =>
       getDb().prepare('UPDATE cards SET status = ? WHERE id = ?').run(status, id),
-    updateInfo: (id: number, cvc: string | null, cardholder: string | null, expiresAt: string | null, note: string, ownerId: number | null) =>
-      getDb().prepare('UPDATE cards SET cvc = ?, cardholder = ?, expires_at = ?, note = ?, owner_id = ? WHERE id = ?').run(cvc, cardholder, expiresAt, note, ownerId, id),
+    updateInfo: (id: number, cvc: string | null, cardholder: string | null, expiresAt: string | null, note: string, ownerId: number | null, currency: string) =>
+      getDb().prepare('UPDATE cards SET cvc = ?, cardholder = ?, expires_at = ?, note = ?, owner_id = ?, currency = ? WHERE id = ?').run(cvc, cardholder, expiresAt, note, ownerId, currency, id),
     updateBalance: (id: number, balance: number) =>
       getDb().prepare('UPDATE cards SET balance = ? WHERE id = ?').run(balance, id),
     delete: (id: number) =>
@@ -114,7 +117,15 @@ export const db = {
       getDb().prepare(`SELECT t.*, c.card_number FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
     create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number) =>
       getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by) VALUES (?, ?, ?, ?, ?, ?)').run(cardId, type, amount, balanceAfter, note, createdBy),
+    update: (id: number, type: string, amount: number, note: string) =>
+      getDb().prepare('UPDATE transactions SET type = ?, amount = ?, note = ? WHERE id = ?').run(type, amount, note, id),
+    delete: (id: number) =>
+      getDb().prepare('DELETE FROM transactions WHERE id = ?').run(id),
+    findById: (id: number) =>
+      getDb().prepare('SELECT * FROM transactions WHERE id = ?').get(id) as any,
     todayCount: () =>
       (getDb().prepare(`SELECT COUNT(*) as count FROM transactions WHERE date(created_at) = date('now')`).get() as any).count,
+    todayAmountByOwner: (ownerId: number) =>
+      (getDb().prepare(`SELECT COALESCE(SUM(amount), 0) as total FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? AND date(t.created_at) = date('now')`).get(ownerId) as any).total as number,
   },
 }

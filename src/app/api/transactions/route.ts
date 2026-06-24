@@ -26,6 +26,33 @@ export async function POST(request: NextRequest) {
   const card = db.cards.findById(cardId)
   if (!card) return NextResponse.json({ error: 'Card not found' }, { status: 404 })
 
-  db.transactions.create(cardId, type, amount, card.balance, note || '', session.id)
-  return NextResponse.json({ ok: true }, { status: 201 })
+  const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
+  const newBalance = card.balance + delta
+
+  if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+
+  db.cards.updateBalance(cardId, newBalance)
+  db.transactions.create(cardId, type, delta, newBalance, note || '', session.id)
+  return NextResponse.json({ ok: true, balance: newBalance }, { status: 201 })
+}
+
+export async function PATCH(request: NextRequest) {
+  const session = await getSession()
+  if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { id, type, amount, note } = await request.json()
+  if (!id || !type || amount === undefined) return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
+
+  const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
+  db.transactions.update(id, type, delta, note || '')
+  return NextResponse.json({ ok: true })
+}
+
+export async function DELETE(request: NextRequest) {
+  const session = await getSession()
+  if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { id } = await request.json()
+  db.transactions.delete(id)
+  return NextResponse.json({ ok: true })
 }

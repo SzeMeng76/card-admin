@@ -61,7 +61,8 @@
     "amount": "Amount",
     "initialBalance": "Initial Balance",
     "cvc": "CVC",
-    "cardholder": "Cardholder"
+    "cardholder": "Cardholder",
+    "currency": "Currency"
   },
   "users": {
     "title": "User Management",
@@ -84,7 +85,8 @@
     "topup": "Top Up",
     "deduct": "Deduct",
     "manual": "Manual",
-    "addRecord": "Add Record"
+    "addRecord": "Add Record",
+    "confirmDelete": "Delete this transaction record?"
   },
   "portal": {
     "title": "My Cards",
@@ -97,6 +99,11 @@
     "noCards": "No cards found",
     "expires": "Expires",
     "cardholder": "Cardholder",
-    "clickDetails": "Click for details"
+    "clickDetails": "Click for details",
+    "myCardCount": "My Cards",
+    "activeCards": "Active Cards",
+    "totalBalance": "Total Balance",
+    "txCount": "Transactions",
+    "todayAmount": "Today's Activity"
   }
 }

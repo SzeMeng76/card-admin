@@ -15,6 +15,7 @@ interface Card {
   note: string
   cvc: string | null
   cardholder: string | null
+  currency: string
   created_at: string
   expires_at: string | null
 }
@@ -23,6 +24,9 @@ interface User {
   id: number
   username: string
 }
+
+const CURRENCY_SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
+const cs = (currency: string) => CURRENCY_SYMBOL[currency] || currency
 
 export default function CardsPage() {
   const t = useTranslations()
@@ -34,8 +38,8 @@ export default function CardsPage() {
   const [balanceModal, setBalanceModal] = useState<Card | null>(null)
   const [balanceType, setBalanceType] = useState<'topup' | 'deduct'>('topup')
 
-  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '' })
-  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '' })
+  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD' })
+  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD' })
   const [balanceForm, setBalanceForm] = useState({ amount: '', note: '' })
 
   async function load() {
@@ -62,10 +66,11 @@ export default function CardsPage() {
         expiresAt: form.expiresAt || null,
         cvc: form.cvc || null,
         cardholder: form.cardholder || null,
+        currency: form.currency,
       }),
     })
     setShowAdd(false)
-    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '' })
+    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD' })
     load()
   }
 
@@ -85,6 +90,7 @@ export default function CardsPage() {
       expiresAt: card.expires_at ? card.expires_at.split('T')[0].slice(0, 7) : '',
       note: card.note || '',
       ownerId: card.owner_id ? String(card.owner_id) : '',
+      currency: card.currency || 'USD',
     })
     setEditModal(card)
   }
@@ -102,6 +108,7 @@ export default function CardsPage() {
         expiresAt: editForm.expiresAt || null,
         note: editForm.note,
         ownerId: editForm.ownerId ? Number(editForm.ownerId) : null,
+        currency: editForm.currency,
       }),
     })
     setEditModal(null)
@@ -200,6 +207,15 @@ export default function CardsPage() {
                 <Label>{t('cards.cardholder')}</Label>
                 <Input value={form.cardholder} onChange={e => setForm(f => ({ ...f, cardholder: e.target.value }))} />
               </div>
+              <div className="space-y-1">
+                <Label>{t('cards.currency')}</Label>
+                <select className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="HKD">HKD (HK$)</option>
+                </select>
+              </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit">{t('common.save')}</Button>
                 <Button type="button" variant="outline" onClick={() => setShowAdd(false)}>{t('common.cancel')}</Button>
@@ -272,6 +288,15 @@ export default function CardsPage() {
                 <Label>{t('common.note')}</Label>
                 <Input value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
               </div>
+              <div className="space-y-1">
+                <Label>{t('cards.currency')}</Label>
+                <select className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" value={editForm.currency} onChange={e => setEditForm(f => ({ ...f, currency: e.target.value }))}>
+                  <option value="USD">USD ($)</option>
+                  <option value="GBP">GBP (£)</option>
+                  <option value="EUR">EUR (€)</option>
+                  <option value="HKD">HKD (HK$)</option>
+                </select>
+              </div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit">{t('common.save')}</Button>
                 <Button type="button" variant="outline" onClick={() => setEditModal(null)}>{t('common.cancel')}</Button>
@@ -295,7 +320,7 @@ export default function CardsPage() {
               <tr key={card.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-mono text-xs">{card.card_number}</td>
                 <td className="px-4 py-3 text-zinc-600">{card.owner_name || <span className="text-zinc-400">{t('cards.noOwner')}</span>}</td>
-                <td className="px-4 py-3 font-medium">¥{Number(card.balance).toFixed(2)}</td>
+                <td className="px-4 py-3 font-medium">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span></td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {t(`common.${card.status as 'active' | 'frozen'}`)}

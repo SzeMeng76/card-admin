@@ -61,7 +61,8 @@
     "amount": "金额",
     "initialBalance": "初始余额",
     "cvc": "CVC",
-    "cardholder": "持卡人"
+    "cardholder": "持卡人",
+    "currency": "货币"
   },
   "users": {
     "title": "用户管理",
@@ -84,7 +85,8 @@
     "topup": "充值",
     "deduct": "扣减",
     "manual": "手动",
-    "addRecord": "添加记录"
+    "addRecord": "添加记录",
+    "confirmDelete": "确认删除此交易记录？"
   },
   "portal": {
     "title": "我的卡片",
@@ -97,6 +99,11 @@
     "noCards": "暂无卡片",
     "expires": "到期",
     "cardholder": "持卡人",
-    "clickDetails": "点击查看详情"
+    "clickDetails": "点击查看详情",
+    "myCardCount": "我的卡片",
+    "activeCards": "激活卡片",
+    "totalBalance": "总余额",
+    "txCount": "交易次数",
+    "todayAmount": "今日交易金额"
   }
 }

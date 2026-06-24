@@ -13,8 +13,12 @@ interface CardData {
   expires_at: string | null
   cvc: string | null
   cardholder: string | null
+  currency: string
   note: string
 }
+
+const CURRENCY_SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
+const cs = (c: string) => CURRENCY_SYMBOL[c] || c
 
 interface Transaction {
   id: number
@@ -88,7 +92,7 @@ export default function CardDetailPage() {
 
         <div className="border-t border-white/20 pt-4">
           <p className="text-xs opacity-60 uppercase mb-1">{t('portal.balance')}</p>
-          <p className="text-3xl font-bold">¥{Number(card.balance).toFixed(2)}</p>
+          <p className="text-3xl font-bold">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-base font-normal opacity-70">{card.currency}</span></p>
         </div>
       </div>
 
@@ -115,9 +119,9 @@ export default function CardDetailPage() {
                 <tr key={tx.id} className="hover:bg-zinc-50">
                   <td className="px-4 py-3 text-xs">{tx.type}</td>
                   <td className={`px-4 py-3 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {tx.amount > 0 ? '+' : ''}¥{Number(tx.amount).toFixed(2)}
+                    {tx.amount > 0 ? '+' : ''}{cs(card.currency)}{Number(tx.amount).toFixed(2)}
                   </td>
-                  <td className="px-4 py-3">¥{Number(tx.balance_after).toFixed(2)}</td>
+                  <td className="px-4 py-3">{cs(card.currency)}{Number(tx.balance_after).toFixed(2)}</td>
                   <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
                   <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at).toLocaleString()}</td>
                 </tr>

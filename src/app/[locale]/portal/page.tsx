@@ -1,91 +1,58 @@
-'use client'
+import { getTranslations } from 'next-intl/server'
+import { getSession } from '@/lib/auth'
+import { db } from '@/lib/db'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import PortalCards from './PortalCards'
 
-import { useEffect, useState } from 'react'
-import { useTranslations } from 'next-intl'
-import { useRouter, useParams } from 'next/navigation'
-import { Card, CardContent } from '@/components/ui/card'
+export default async function PortalPage() {
+  const t = await getTranslations()
+  const session = await getSession()
+  if (!session) return null
 
-interface CardData {
-  id: number
-  card_number: string
-  balance: number
-  status: string
-  expires_at: string | null
-  cvc: string | null
-  cardholder: string | null
-  note: string
-}
+  const cards = db.cards.listByOwner(session.id)
+  const activeCards = cards.filter(c => c.status === 'active').length
+  const allTx = db.transactions.listByOwner(session.id)
+  const todayAmount = db.transactions.todayAmountByOwner(session.id)
 
-export default function PortalPage() {
-  const t = useTranslations()
-  const router = useRouter()
-  const params = useParams()
-  const locale = params.locale as string
-  const [cards, setCards] = useState<CardData[]>([])
-
-  useEffect(() => {
-    fetch('/api/cards').then(r => r.json()).then(setCards)
-  }, [])
-
-  function formatExpiry(val: string | null) {
-    if (!val) return '—'
-    const parts = val.split('-')
-    if (parts.length >= 2) return `${parts[1]}/${parts[0].slice(2)}`
-    return val
+  // Group balance by currency
+  const balanceByCurrency: Record<string, number> = {}
+  for (const c of cards) {
+    const cur = c.currency || 'USD'
+    balanceByCurrency[cur] = (balanceByCurrency[cur] || 0) + c.balance
   }
+  const SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
+  const balanceStr = Object.entries(balanceByCurrency)
+    .map(([cur, amt]) => `${SYMBOL[cur] || cur}${amt.toFixed(2)}`)
+    .join(' / ') || '$0.00'
+
+  const stats = [
+    { label: t('portal.myCardCount'), value: cards.length },
+    { label: t('portal.activeCards'), value: activeCards },
+    { label: t('portal.totalBalance'), value: balanceStr },
+    { label: t('portal.txCount'), value: allTx.length },
+    { label: t('portal.todayAmount'), value: todayAmount >= 0 ? `+$${todayAmount.toFixed(2)}` : `-$${Math.abs(todayAmount).toFixed(2)}` },
+  ]
 
   return (
     <div>
-      <h1 className="text-xl font-semibold mb-6">{t('portal.myCards')}</h1>
-      {cards.length === 0 ? (
-        <p className="text-zinc-400">{t('portal.noCards')}</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {cards.map(card => (
-            <div
-              key={card.id}
-              className="cursor-pointer group"
-              onClick={() => router.push(`/${locale}/portal/cards/${card.id}`)}
-            >
-              <Card className="overflow-hidden transition-shadow group-hover:shadow-md">
-                <div className="bg-gradient-to-br from-zinc-800 to-zinc-600 text-white p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-medium uppercase tracking-widest opacity-70">Virtual Card</span>
-                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${card.status === 'active' ? 'bg-green-400/20 text-green-300' : 'bg-red-400/20 text-red-300'}`}>
-                      {t(`common.${card.status as 'active' | 'frozen'}`)}
-                    </span>
-                  </div>
-                  <p className="font-mono text-lg tracking-widest">
-                    {card.card_number.match(/.{1,4}/g)?.join(' ') || card.card_number}
-                  </p>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-xs opacity-60 uppercase">{t('portal.cardholder')}</p>
-                      <p className="text-sm font-medium">{card.cardholder || '—'}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs opacity-60 uppercase">{t('portal.expires')}</p>
-                      <p className="text-sm font-mono">{formatExpiry(card.expires_at)}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs opacity-60 uppercase">CVC</p>
-                      <p className="text-sm font-mono">{card.cvc || '—'}</p>
-                    </div>
-                  </div>
-                </div>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-zinc-500">{t('portal.balance')}</span>
-                    <span className="text-xl font-bold">¥{Number(card.balance).toFixed(2)}</span>
-                  </div>
-                  {card.note && <p className="text-xs text-zinc-400 mt-1">{card.note}</p>}
-                  <p className="text-xs text-zinc-300 mt-2 text-right">{t('portal.clickDetails')} →</p>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-      )}
+      <h1 className="text-xl font-semibold mb-6">{t('portal.title')}</h1>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+        {stats.map(s => (
+          <Card key={s.label}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xs text-zinc-500 font-normal">{s.label}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-2xl font-bold text-zinc-900">{s.value}</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Cards list (client) */}
+      <PortalCards />
     </div>
   )
 }
