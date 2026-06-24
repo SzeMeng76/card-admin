@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
+import { getBot } from '@/lib/bot'
 
 export async function GET(request: NextRequest) {
   const session = await getSession()
@@ -33,6 +34,32 @@ export async function POST(request: NextRequest) {
 
   db.cards.updateBalance(cardId, newBalance)
   db.transactions.create(cardId, type, delta, newBalance, note || '', session.id)
+
+  const sign = delta > 0 ? '+' : ''
+  const typeLabel = type === 'deduct' ? '💸 扣款' : '💰 入账'
+  const msg =
+    `💳 *新交易通知*\n` +
+    `━━━━━━━━━━━━━\n` +
+    `卡号：\`${card.card_number}\`\n` +
+    `类型：${typeLabel}\n` +
+    `金额：*${sign}${delta.toFixed(2)} ${card.currency || 'USD'}*\n` +
+    `余额：${newBalance.toFixed(2)} ${card.currency || 'USD'}\n` +
+    (note ? `备注：${note}\n` : '')
+
+  const recipients = new Set<number>()
+  if (card.owner_id) {
+    const ownerTgId = db.users.getTelegramId(card.owner_id)
+    if (ownerTgId) recipients.add(ownerTgId)
+  }
+  for (const adminTgId of db.users.listAdminTelegramIds()) {
+    recipients.add(adminTgId)
+  }
+
+  const bot = getBot()
+  recipients.forEach((chatId) => {
+    bot.api.sendMessage(chatId, msg, { parse_mode: 'Markdown' }).catch(console.error)
+  })
+
   return NextResponse.json({ ok: true, balance: newBalance }, { status: 201 })
 }
 

@@ -109,6 +109,10 @@ export const db = {
       getDb().prepare('UPDATE users SET telegram_link_token = ?, telegram_link_expires = ? WHERE id = ?').run(token, expires, userId),
     findByLinkToken: (token: string) =>
       getDb().prepare('SELECT id, username, role FROM users WHERE telegram_link_token = ? AND telegram_link_expires > ?').get(token, Date.now()) as any,
+    getTelegramId: (userId: number) =>
+      (getDb().prepare('SELECT telegram_id FROM users WHERE id = ?').get(userId) as any)?.telegram_id as number | null,
+    listAdminTelegramIds: () =>
+      (getDb().prepare('SELECT telegram_id FROM users WHERE role = ? AND telegram_id IS NOT NULL').all('admin') as any[]).map((r) => r.telegram_id as number),
   },
   cards: {
     list: () =>
