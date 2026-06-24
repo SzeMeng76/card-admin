@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { cs } from '@/lib/currency'
 
 interface Transaction {
   id: number
   card_number: string
+  currency: string
   type: string
   amount: number
   balance_after: number
@@ -39,9 +41,9 @@ export default function PortalTransactionsPage() {
                 <td className="px-4 py-3 font-mono text-xs">{tx.card_number}</td>
                 <td className="px-4 py-3 text-xs">{tx.type}</td>
                 <td className={`px-4 py-3 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {tx.amount > 0 ? '+' : ''}¥{Number(tx.amount).toFixed(2)}
+                  {tx.amount > 0 ? '+' : ''}{cs(tx.currency)}{Number(tx.amount).toFixed(2)}
                 </td>
-                <td className="px-4 py-3">¥{Number(tx.balance_after).toFixed(2)}</td>
+                <td className="px-4 py-3">{cs(tx.currency)}{Number(tx.balance_after).toFixed(2)}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}</td>
               </tr>

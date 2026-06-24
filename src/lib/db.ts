@@ -133,14 +133,16 @@ export const db = {
       getDb().prepare('DELETE FROM cards WHERE id = ?').run(id),
     stats: () =>
       getDb().prepare('SELECT COUNT(*) as total, SUM(balance) as totalBalance, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active FROM cards').get('active') as any,
+    balanceByCurrency: () =>
+      getDb().prepare('SELECT COALESCE(currency, \'USD\') as currency, SUM(balance) as total FROM cards GROUP BY currency').all() as { currency: string; total: number }[],
   },
   transactions: {
     list: (limit = 100) =>
-      getDb().prepare(`SELECT t.*, c.card_number, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id ORDER BY t.created_at DESC LIMIT ?`).all(limit) as any[],
+      getDb().prepare(`SELECT t.*, c.card_number, c.currency, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id ORDER BY t.created_at DESC LIMIT ?`).all(limit) as any[],
     listByCard: (cardId: number) =>
-      getDb().prepare(`SELECT t.*, c.card_number, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id WHERE t.card_id = ? ORDER BY t.created_at DESC`).all(cardId) as any[],
+      getDb().prepare(`SELECT t.*, c.card_number, c.currency, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id WHERE t.card_id = ? ORDER BY t.created_at DESC`).all(cardId) as any[],
     listByOwner: (ownerId: number) =>
-      getDb().prepare(`SELECT t.*, c.card_number FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
+      getDb().prepare(`SELECT t.*, c.card_number, c.currency FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
     create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number, createdAt?: string | null) =>
       getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))').run(cardId, type, amount, balanceAfter, note, createdBy, createdAt ?? null),
     update: (id: number, type: string, amount: number, balanceAfter: number, note: string) =>
@@ -157,5 +159,18 @@ export const db = {
       (getDb().prepare(`SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM transactions WHERE date(created_at) = date('now')`).get() as any).total as number,
     todayAmountByOwner: (ownerId: number) =>
       (getDb().prepare(`SELECT COALESCE(SUM(amount), 0) as total FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? AND date(t.created_at) = date('now')`).get(ownerId) as any).total as number,
+    todayAmountByCurrency: () =>
+      getDb().prepare(`SELECT COALESCE(c.currency, 'USD') as currency, COALESCE(SUM(ABS(t.amount)), 0) as total FROM transactions t JOIN cards c ON t.card_id = c.id WHERE date(t.created_at) = date('now') GROUP BY c.currency`).all() as { currency: string; total: number }[],
+    todayAmountByCurrencyByOwner: (ownerId: number) =>
+      getDb().prepare(`SELECT COALESCE(c.currency, 'USD') as currency, COALESCE(SUM(ABS(t.amount)), 0) as total FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? AND date(t.created_at) = date('now') GROUP BY c.currency`).all(ownerId) as { currency: string; total: number }[],
   },
+}
+
+import { CURRENCY_SYMBOL } from './currency'
+
+export { CURRENCY_SYMBOL }
+
+export function fmtAmountByCurrency(rows: { currency: string; total: number }[]): string {
+  if (!rows.length) return '0.00'
+  return rows.map(r => `${CURRENCY_SYMBOL[r.currency] || r.currency}${Number(r.total).toFixed(2)}`).join(' / ')
 }

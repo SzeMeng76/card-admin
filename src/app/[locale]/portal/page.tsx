@@ -1,6 +1,6 @@
 import { getTranslations } from 'next-intl/server'
 import { getSession } from '@/lib/auth'
-import { db } from '@/lib/db'
+import { db, fmtAmountByCurrency } from '@/lib/db'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import PortalCards from './PortalCards'
 
@@ -13,7 +13,6 @@ export default async function PortalPage() {
   const activeCards = cards.filter(c => c.status === 'active').length
   const allTx = db.transactions.listByOwner(session.id)
   const todayCount = db.transactions.todayCountByOwner(session.id)
-  const todayAmount = db.transactions.todayAmountByOwner(session.id)
 
   // Group balance by currency
   const balanceByCurrency: Record<string, number> = {}
@@ -21,12 +20,8 @@ export default async function PortalPage() {
     const cur = c.currency || 'USD'
     balanceByCurrency[cur] = (balanceByCurrency[cur] || 0) + c.balance
   }
-  const SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
-  const balanceStr = Object.entries(balanceByCurrency)
-    .map(([cur, amt]) => `${SYMBOL[cur] || cur}${amt.toFixed(2)}`)
-    .join(' / ') || '$0.00'
-
-  const todayAmtStr = todayAmount >= 0 ? `+$${todayAmount.toFixed(2)}` : `-$${Math.abs(todayAmount).toFixed(2)}`
+  const balanceStr = fmtAmountByCurrency(Object.entries(balanceByCurrency).map(([currency, total]) => ({ currency, total })))
+  const todayAmtStr = fmtAmountByCurrency(db.transactions.todayAmountByCurrencyByOwner(session.id))
 
   const stats = [
     { label: t('portal.myCardCount'), value: cards.length },

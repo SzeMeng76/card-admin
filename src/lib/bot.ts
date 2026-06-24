@@ -1,5 +1,6 @@
 import { Bot, webhookCallback, InlineKeyboard } from 'grammy'
-import { db } from './db'
+import { db, fmtAmountByCurrency } from './db'
+import { cs } from './currency'
 
 function userMenu() {
   return new InlineKeyboard()
@@ -17,10 +18,18 @@ function adminMenu() {
 async function sendWelcome(ctx: any, user: any) {
   const isAdmin = user.role === 'admin'
   const cards = isAdmin ? db.cards.list() : db.cards.listByOwner(user.id)
-  const total = cards.reduce((s: number, c: any) => s + Number(c.balance), 0)
-  const todayAmount = isAdmin
-    ? db.transactions.todayAmount()
-    : db.transactions.todayAmountByOwner(user.id)
+  const balanceByCur: Record<string, number> = {}
+  for (const c of cards) {
+    const cur = c.currency || 'USD'
+    balanceByCur[cur] = (balanceByCur[cur] || 0) + Number(c.balance)
+  }
+  const balanceStr = fmtAmountByCurrency(Object.entries(balanceByCur).map(([currency, total]) => ({ currency, total })))
+  const todayAmtStr = fmtAmountByCurrency(isAdmin
+    ? db.transactions.todayAmountByCurrency()
+    : db.transactions.todayAmountByCurrencyByOwner(user.id))
+  const todayCount = isAdmin
+    ? db.transactions.todayCount()
+    : db.transactions.todayCountByOwner(user.id)
 
   const tgName = [ctx.from.first_name, ctx.from.last_name].filter(Boolean).join(' ') || ctx.from.username || user.username
 
@@ -29,8 +38,8 @@ async function sendWelcome(ctx: any, user: any) {
     `🆔 Telegram ID：\`${ctx.from.id}\`\n\n` +
     `━━━━━━━━━━━━━━━\n` +
     `💳 卡片数量：${cards.length} 张\n` +
-    `💰 总余额：${total.toFixed(2)}\n` +
-    `📈 今日交易金额：${Number(todayAmount).toFixed(2)}\n` +
+    `💰 总余额：${balanceStr}\n` +
+    `📈 今日交易：${todayCount} 笔 / ${todayAmtStr}\n` +
     `━━━━━━━━━━━━━━━\n\n` +
     `请选择操作：`
 
@@ -68,7 +77,7 @@ function fmtCards(cards: any[]) {
   if (!cards.length) return '没有找到卡片。'
   return cards.map(c =>
     `💳 *${c.card_number}*\n` +
-    `余额: ${c.currency} ${Number(c.balance).toFixed(2)}\n` +
+    `余额: ${cs(c.currency)}${Number(c.balance).toFixed(2)}\n` +
     `状态: ${c.status === 'active' ? '✅ 正常' : '🔒 封禁'}` +
     (c.cardholder ? `\n持卡人: ${c.cardholder}` : '') +
     (c.expires_at ? `\n有效期: ${(() => { const p = c.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })()}` : '') +
@@ -125,8 +134,10 @@ function registerHandlers(bot: Bot) {
     const user = getUser(ctx.from.id)
     if (!user) { await ctx.reply('请先绑定账号。'); return }
     const cards = user.role === 'admin' ? db.cards.list() : db.cards.listByOwner(user.id)
-    const total = cards.reduce((s, c) => s + Number(c.balance), 0)
-    await ctx.reply(`💰 共 ${cards.length} 张卡\n总余额：${total.toFixed(2)}`)
+    const byCur: Record<string, number> = {}
+    for (const c of cards) { const cur = c.currency || 'USD'; byCur[cur] = (byCur[cur] || 0) + Number(c.balance) }
+    const balanceStr = fmtAmountByCurrency(Object.entries(byCur).map(([currency, total]) => ({ currency, total })))
+    await ctx.reply(`💰 共 ${cards.length} 张卡\n总余额：${balanceStr}`)
   })
 
   bot.callbackQuery('txn', async (ctx) => {
@@ -138,7 +149,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额：${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}\n余额：${cs(t.currency)}${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -147,8 +158,9 @@ function registerHandlers(bot: Bot) {
     if (!getAdmin(ctx.from.id)) { await ctx.reply('权限不足。'); return }
     const s = db.cards.stats()
     const todayCount = db.transactions.todayCount()
-    const todayAmt = db.transactions.todayAmount()
-    await ctx.reply(`📊 *系统统计*\n\n💳 卡片总数：${s.total}\n✅ 活跃卡片：${s.active}\n💰 总余额：${Number(s.totalBalance || 0).toFixed(2)}\n📈 今日交易：${todayCount} 笔 / ${Number(todayAmt).toFixed(2)}`, { parse_mode: 'Markdown' })
+    const balanceStr = fmtAmountByCurrency(db.cards.balanceByCurrency())
+    const todayAmtStr = fmtAmountByCurrency(db.transactions.todayAmountByCurrency())
+    await ctx.reply(`📊 *系统统计*\n\n💳 卡片总数：${s.total}\n✅ 活跃卡片：${s.active}\n💰 总余额：${balanceStr}\n📈 今日交易：${todayCount} 笔 / ${todayAmtStr}`, { parse_mode: 'Markdown' })
   })
 
   bot.callbackQuery('allcards', async (ctx) => {
@@ -191,8 +203,10 @@ function registerHandlers(bot: Bot) {
     const user = getUser(ctx.from!.id)
     if (!user) { await ctx.reply('请先绑定账号。'); return }
     const cards = user.role === 'admin' ? db.cards.list() : db.cards.listByOwner(user.id)
-    const total = cards.reduce((s, c) => s + Number(c.balance), 0)
-    await ctx.reply(`💰 共 ${cards.length} 张卡\n总余额: ${total.toFixed(2)}`)
+    const byCur: Record<string, number> = {}
+    for (const c of cards) { const cur = c.currency || 'USD'; byCur[cur] = (byCur[cur] || 0) + Number(c.balance) }
+    const balanceStr = fmtAmountByCurrency(Object.entries(byCur).map(([currency, total]) => ({ currency, total })))
+    await ctx.reply(`💰 共 ${cards.length} 张卡\n总余额: ${balanceStr}`)
   })
 
   bot.command('txn', async (ctx) => {
@@ -203,7 +217,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}\n余额: ${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}\n余额: ${cs(t.currency)}${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -211,8 +225,9 @@ function registerHandlers(bot: Bot) {
     if (!getAdmin(ctx.from!.id)) { await ctx.reply('权限不足。'); return }
     const s = db.cards.stats()
     const todayCount = db.transactions.todayCount()
-    const todayAmt = db.transactions.todayAmount()
-    await ctx.reply(`📊 系统统计\n\n卡片总数: ${s.total}\n活跃卡片: ${s.active}\n总余额: ${Number(s.totalBalance || 0).toFixed(2)}\n今日交易: ${todayCount} 笔 / ${Number(todayAmt).toFixed(2)}`)
+    const balanceStr = fmtAmountByCurrency(db.cards.balanceByCurrency())
+    const todayAmtStr = fmtAmountByCurrency(db.transactions.todayAmountByCurrency())
+    await ctx.reply(`📊 系统统计\n\n卡片总数: ${s.total}\n活跃卡片: ${s.active}\n总余额: ${balanceStr}\n今日交易: ${todayCount} 笔 / ${todayAmtStr}`)
   })
 
   bot.command('card', async (ctx) => {
@@ -225,7 +240,7 @@ function registerHandlers(bot: Bot) {
     const txns = db.transactions.listByCard(card.id).slice(0, 5)
     const txnText = txns.length
       ? '\n\n最近交易:\n' + txns.map((t: any) =>
-          `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.amount > 0 ? '+' : ''}${Number(t.amount).toFixed(2)}${t.note ? `  ${t.note}` : ''}  🕐 ${fmtDate(t.created_at)}`
+          `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}${t.note ? `  ${t.note}` : ''}  🕐 ${fmtDate(t.created_at)}`
         ).join('\n')
       : '\n\n暂无交易记录'
     await ctx.reply(fmtCards([card]) + txnText)
@@ -256,7 +271,7 @@ function registerHandlers(bot: Bot) {
     const newBalance = Number(card.balance) + amount
     db.cards.updateBalance(card.id, newBalance)
     db.transactions.create(card.id, 'topup', amount, newBalance, noteParts.join(' ') || 'TG充值', admin.id)
-    await ctx.reply(`✅ 充值成功\n卡号: ${card.card_number}\n金额: +${amount.toFixed(2)}\n新余额: ${newBalance.toFixed(2)}`)
+    await ctx.reply(`✅ 充值成功\n卡号: ${card.card_number}\n金额: +${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${cs(card.currency)}${newBalance.toFixed(2)}`)
   })
 
   bot.command('deduct', async (ctx) => {
@@ -272,10 +287,10 @@ function registerHandlers(bot: Bot) {
     const card = cards[0]
     if (card.status !== 'active') { await ctx.reply('该卡已封禁，无法操作。'); return }
     const newBalance = Number(card.balance) - amount
-    if (newBalance < 0) { await ctx.reply(`余额不足，当前余额: ${Number(card.balance).toFixed(2)}`); return }
+    if (newBalance < 0) { await ctx.reply(`余额不足，当前余额: ${cs(card.currency)}${Number(card.balance).toFixed(2)}`); return }
     db.cards.updateBalance(card.id, newBalance)
     db.transactions.create(card.id, 'deduct', -amount, newBalance, noteParts.join(' ') || 'TG扣款', admin.id)
-    await ctx.reply(`✅ 扣款成功\n卡号: ${card.card_number}\n金额: -${amount.toFixed(2)}\n新余额: ${newBalance.toFixed(2)}`)
+    await ctx.reply(`✅ 扣款成功\n卡号: ${card.card_number}\n金额: -${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${cs(card.currency)}${newBalance.toFixed(2)}`)
   })
 
   bot.command('block', async (ctx) => {

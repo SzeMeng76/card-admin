@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
+import { cs } from '@/lib/currency'
 
 interface CardData {
   id: number
@@ -16,9 +17,6 @@ interface CardData {
   currency: string
   note: string
 }
-
-const CURRENCY_SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
-const cs = (c: string) => CURRENCY_SYMBOL[c] || c
 
 interface Transaction {
   id: number

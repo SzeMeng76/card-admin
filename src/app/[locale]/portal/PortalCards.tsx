@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useRouter, useParams } from 'next/navigation'
 import { Card, CardContent } from '@/components/ui/card'
+import { cs } from '@/lib/currency'
 
 interface CardData {
   id: number
@@ -16,9 +17,6 @@ interface CardData {
   currency: string
   note: string
 }
-
-const CURRENCY_SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
-const cs = (c: string) => CURRENCY_SYMBOL[c] || c
 
 export default function PortalCards() {
   const t = useTranslations()

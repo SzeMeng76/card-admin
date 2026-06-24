@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
+import { cs } from '@/lib/currency'
 
 interface Card {
   id: number
@@ -24,9 +25,6 @@ interface User {
   id: number
   username: string
 }
-
-const CURRENCY_SYMBOL: Record<string, string> = { USD: '$', GBP: '£', EUR: '€', HKD: 'HK$' }
-const cs = (currency: string) => CURRENCY_SYMBOL[currency] || currency
 
 export default function CardsPage() {
   const t = useTranslations()
@@ -231,7 +229,7 @@ export default function CardsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
             <h2 className="font-semibold mb-1">{balanceModal.card_number}</h2>
-            <p className="text-sm text-zinc-500 mb-4">{t('cards.balance')}: ¥{Number(balanceModal.balance).toFixed(2)}</p>
+            <p className="text-sm text-zinc-500 mb-4">{t('cards.balance')}: {cs(balanceModal.currency)}{Number(balanceModal.balance).toFixed(2)}</p>
             <div className="flex gap-2 mb-4">
               <Button size="sm" variant={balanceType === 'topup' ? 'default' : 'outline'} onClick={() => setBalanceType('topup')}>{t('cards.topup')}</Button>
               <Button size="sm" variant={balanceType === 'deduct' ? 'destructive' : 'outline'} onClick={() => setBalanceType('deduct')}>{t('cards.deduct')}</Button>

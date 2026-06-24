@@ -1,20 +1,21 @@
 import { getTranslations } from 'next-intl/server'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { db } from '@/lib/db'
+import { db, fmtAmountByCurrency } from '@/lib/db'
 
 export default async function DashboardPage() {
   const t = await getTranslations()
 
   const stats = db.cards.stats()
+  const balanceStr = fmtAmountByCurrency(db.cards.balanceByCurrency())
   const todayTx = db.transactions.todayCount()
-  const todayAmt = db.transactions.todayAmount()
+  const todayAmtStr = fmtAmountByCurrency(db.transactions.todayAmountByCurrency())
   const userCount = db.users.list().length
 
   const items = [
     { label: t('dashboard.totalCards'), value: stats?.total ?? 0 },
     { label: t('dashboard.activeCards'), value: stats?.active ?? 0 },
-    { label: t('dashboard.totalBalance'), value: `$${Number(stats?.totalBalance ?? 0).toFixed(2)}` },
-    { label: t('dashboard.todayTransactions'), value: `${todayTx} 笔 / $${Number(todayAmt).toFixed(2)}` },
+    { label: t('dashboard.totalBalance'), value: balanceStr },
+    { label: t('dashboard.todayTransactions'), value: `${todayTx} 笔 / ${todayAmtStr}` },
     { label: t('dashboard.totalUsers'), value: userCount },
   ]
 
