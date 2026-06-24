@@ -66,7 +66,8 @@ function initSchema(db: Database.Database) {
   const userCols = db.prepare(`PRAGMA table_info(users)`).all() as any[]
   const userColNames = userCols.map((c: any) => c.name)
   if (!userColNames.includes('telegram_id')) {
-    db.exec(`ALTER TABLE users ADD COLUMN telegram_id INTEGER UNIQUE`)
+    db.exec(`ALTER TABLE users ADD COLUMN telegram_id INTEGER`)
+    db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_users_telegram_id ON users(telegram_id) WHERE telegram_id IS NOT NULL`)
   }
   if (!userColNames.includes('telegram_link_token')) {
     db.exec(`ALTER TABLE users ADD COLUMN telegram_link_token TEXT`)
@@ -146,6 +147,8 @@ export const db = {
       getDb().prepare('SELECT * FROM transactions WHERE id = ?').get(id) as any,
     todayCount: () =>
       (getDb().prepare(`SELECT COUNT(*) as count FROM transactions WHERE date(created_at) = date('now')`).get() as any).count,
+    todayAmount: () =>
+      (getDb().prepare(`SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM transactions WHERE date(created_at) = date('now')`).get() as any).total as number,
     todayAmountByOwner: (ownerId: number) =>
       (getDb().prepare(`SELECT COALESCE(SUM(amount), 0) as total FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? AND date(t.created_at) = date('now')`).get(ownerId) as any).total as number,
   },
