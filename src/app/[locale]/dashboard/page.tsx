@@ -7,13 +7,14 @@ export default async function DashboardPage() {
 
   const stats = db.cards.stats()
   const todayTx = db.transactions.todayCount()
+  const todayAmt = db.transactions.todayAmount()
   const userCount = db.users.list().length
 
   const items = [
     { label: t('dashboard.totalCards'), value: stats?.total ?? 0 },
     { label: t('dashboard.activeCards'), value: stats?.active ?? 0 },
     { label: t('dashboard.totalBalance'), value: `$${Number(stats?.totalBalance ?? 0).toFixed(2)}` },
-    { label: t('dashboard.todayTransactions'), value: todayTx },
+    { label: t('dashboard.todayTransactions'), value: `${todayTx} 笔 / $${Number(todayAmt).toFixed(2)}` },
     { label: t('dashboard.totalUsers'), value: userCount },
   ]
 

@@ -147,7 +147,8 @@ function registerHandlers(bot: Bot) {
     if (!getAdmin(ctx.from.id)) { await ctx.reply('权限不足。'); return }
     const s = db.cards.stats()
     const todayCount = db.transactions.todayCount()
-    await ctx.reply(`📊 *系统统计*\n\n💳 卡片总数：${s.total}\n✅ 活跃卡片：${s.active}\n💰 总余额：${Number(s.totalBalance || 0).toFixed(2)}\n📈 今日交易：${todayCount} 笔`, { parse_mode: 'Markdown' })
+    const todayAmt = db.transactions.todayAmount()
+    await ctx.reply(`📊 *系统统计*\n\n💳 卡片总数：${s.total}\n✅ 活跃卡片：${s.active}\n💰 总余额：${Number(s.totalBalance || 0).toFixed(2)}\n📈 今日交易：${todayCount} 笔 / ${Number(todayAmt).toFixed(2)}`, { parse_mode: 'Markdown' })
   })
 
   bot.callbackQuery('allcards', async (ctx) => {
@@ -210,7 +211,8 @@ function registerHandlers(bot: Bot) {
     if (!getAdmin(ctx.from!.id)) { await ctx.reply('权限不足。'); return }
     const s = db.cards.stats()
     const todayCount = db.transactions.todayCount()
-    await ctx.reply(`📊 系统统计\n\n卡片总数: ${s.total}\n活跃卡片: ${s.active}\n总余额: ${Number(s.totalBalance || 0).toFixed(2)}\n今日交易: ${todayCount} 笔`)
+    const todayAmt = db.transactions.todayAmount()
+    await ctx.reply(`📊 系统统计\n\n卡片总数: ${s.total}\n活跃卡片: ${s.active}\n总余额: ${Number(s.totalBalance || 0).toFixed(2)}\n今日交易: ${todayCount} 笔 / ${Number(todayAmt).toFixed(2)}`)
   })
 
   bot.command('card', async (ctx) => {

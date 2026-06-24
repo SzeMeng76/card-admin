@@ -12,6 +12,7 @@ export default async function PortalPage() {
   const cards = db.cards.listByOwner(session.id)
   const activeCards = cards.filter(c => c.status === 'active').length
   const allTx = db.transactions.listByOwner(session.id)
+  const todayCount = db.transactions.todayCountByOwner(session.id)
   const todayAmount = db.transactions.todayAmountByOwner(session.id)
 
   // Group balance by currency
@@ -25,12 +26,14 @@ export default async function PortalPage() {
     .map(([cur, amt]) => `${SYMBOL[cur] || cur}${amt.toFixed(2)}`)
     .join(' / ') || '$0.00'
 
+  const todayAmtStr = todayAmount >= 0 ? `+$${todayAmount.toFixed(2)}` : `-$${Math.abs(todayAmount).toFixed(2)}`
+
   const stats = [
     { label: t('portal.myCardCount'), value: cards.length },
     { label: t('portal.activeCards'), value: activeCards },
     { label: t('portal.totalBalance'), value: balanceStr },
     { label: t('portal.txCount'), value: allTx.length },
-    { label: t('portal.todayAmount'), value: todayAmount >= 0 ? `+$${todayAmount.toFixed(2)}` : `-$${Math.abs(todayAmount).toFixed(2)}` },
+    { label: t('portal.todayAmount'), value: `${todayCount} 笔 / ${todayAmtStr}` },
   ]
 
   return (

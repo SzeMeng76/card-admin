@@ -151,6 +151,8 @@ export const db = {
       getDb().prepare('SELECT * FROM transactions WHERE id = ?').get(id) as any,
     todayCount: () =>
       (getDb().prepare(`SELECT COUNT(*) as count FROM transactions WHERE date(created_at) = date('now')`).get() as any).count,
+    todayCountByOwner: (ownerId: number) =>
+      (getDb().prepare(`SELECT COUNT(*) as count FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? AND date(t.created_at) = date('now')`).get(ownerId) as any).count as number,
     todayAmount: () =>
       (getDb().prepare(`SELECT COALESCE(SUM(ABS(amount)), 0) as total FROM transactions WHERE date(created_at) = date('now')`).get() as any).total as number,
     todayAmountByOwner: (ownerId: number) =>

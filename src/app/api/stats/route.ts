@@ -8,6 +8,7 @@ export async function GET() {
 
   const stats = db.cards.stats()
   const todayTx = db.transactions.todayCount()
+  const todayAmt = db.transactions.todayAmount()
   const userCount = db.users.list().length
 
   return NextResponse.json({
@@ -15,6 +16,7 @@ export async function GET() {
     totalBalance: stats.totalBalance || 0,
     activeCards: stats.active || 0,
     todayTransactions: todayTx,
+    todayAmount: todayAmt,
     totalUsers: userCount,
   })
 }
