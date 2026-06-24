@@ -8,7 +8,7 @@ on:
       - 'src/**'
       - 'public/**'
       - 'package.json'
-      - 'package-lock.json'
+      - 'pnpm-lock.yaml'
       - 'Dockerfile'
       - 'next.config.ts'
   workflow_dispatch:
