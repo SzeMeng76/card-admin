@@ -1,0 +1,12 @@
+services:
+  app:
+    image: ghcr.io/szemeng76/card-admin:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_PATH=/app/data/cards.db
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    restart: unless-stopped

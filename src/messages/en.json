@@ -1,0 +1,96 @@
+{
+  "common": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "loading": "Loading...",
+    "confirm": "Confirm",
+    "reset": "Reset",
+    "export": "Export CSV",
+    "status": "Status",
+    "active": "Active",
+    "frozen": "Frozen",
+    "actions": "Actions",
+    "createdAt": "Created At",
+    "note": "Note",
+    "back": "Back"
+  },
+  "login": {
+    "title": "Card Admin",
+    "subtitle": "Sign in to your account",
+    "error": "Invalid username or password"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "cards": "Cards",
+    "users": "Users",
+    "transactions": "Transactions",
+    "portal": "My Cards"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "totalCards": "Total Cards",
+    "totalBalance": "Total Balance",
+    "activeCards": "Active Cards",
+    "todayTransactions": "Today's Transactions",
+    "totalUsers": "Total Users"
+  },
+  "cards": {
+    "title": "Card Management",
+    "addCard": "Add Card",
+    "cardNumber": "Card Number",
+    "balance": "Balance",
+    "owner": "Owner",
+    "expiresAt": "Expires At",
+    "topup": "Top Up",
+    "deduct": "Deduct",
+    "freeze": "Freeze",
+    "unfreeze": "Unfreeze",
+    "noOwner": "Unassigned",
+    "confirmDelete": "Delete this card? This cannot be undone.",
+    "addSuccess": "Card added successfully",
+    "balanceUpdated": "Balance updated",
+    "amount": "Amount",
+    "initialBalance": "Initial Balance"
+  },
+  "users": {
+    "title": "User Management",
+    "addUser": "Add User",
+    "role": "Role",
+    "admin": "Admin",
+    "user": "User",
+    "resetPassword": "Reset Password",
+    "newPassword": "New Password",
+    "confirmDelete": "Delete this user?",
+    "addSuccess": "User added successfully"
+  },
+  "transactions": {
+    "title": "Transactions",
+    "type": "Type",
+    "amount": "Amount",
+    "balanceAfter": "Balance After",
+    "cardNumber": "Card Number",
+    "operator": "Operator",
+    "topup": "Top Up",
+    "deduct": "Deduct",
+    "manual": "Manual"
+  },
+  "portal": {
+    "title": "My Cards",
+    "myCards": "My Cards",
+    "myTransactions": "Transactions",
+    "cardNumber": "Card Number",
+    "balance": "Balance",
+    "status": "Status",
+    "expiresAt": "Expires At",
+    "noCards": "No cards found"
+  }
+}
