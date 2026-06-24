@@ -123,7 +123,7 @@ export default function CardDetailPage() {
                   </td>
                   <td className="px-4 py-3">{cs(card.currency)}{Number(tx.balance_after).toFixed(2)}</td>
                   <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
-                  <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at).toLocaleString()}</td>
+                  <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

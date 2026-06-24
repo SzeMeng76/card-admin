@@ -243,7 +243,7 @@ export default function TransactionsPage() {
                 <td className="px-4 py-3">¥{Number(tx.balance_after).toFixed(2)}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
                 <td className="px-4 py-3 text-zinc-500 text-xs">{tx.created_by_name || '—'}</td>
-                <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at).toLocaleString()}</td>
+                <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
                     <Button size="sm" variant="outline" onClick={() => openEdit(tx)}>{t('common.edit')}</Button>
