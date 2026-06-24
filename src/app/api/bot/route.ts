@@ -10,5 +10,5 @@ export async function POST(req: NextRequest) {
     return new Response('Unauthorized', { status: 401 })
   }
   const handler = getBotWebhookHandler()
-  return handler(req)
+  return await handler(req)
 }
