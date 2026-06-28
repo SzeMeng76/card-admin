@@ -16,11 +16,11 @@ export async function POST(request: NextRequest) {
   const session = await getSession()
   if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  const { cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder, currency } = await request.json()
+  const { cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder, currency, billingAddress } = await request.json()
   if (!cardNumber) return NextResponse.json({ error: 'Card number required' }, { status: 400 })
 
   try {
-    db.cards.create(cardNumber, ownerId || null, balance || 0, note || '', expiresAt || null, cvc || null, cardholder || null, currency || 'USD')
+    db.cards.create(cardNumber, ownerId || null, balance || 0, note || '', expiresAt || null, cvc || null, cardholder || null, currency || 'USD', billingAddress || null)
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Card number already exists' }, { status: 409 })
@@ -36,7 +36,7 @@ export async function PATCH(request: NextRequest) {
   if (body.status !== undefined) {
     db.cards.updateStatus(body.id, body.status)
   } else {
-    db.cards.updateInfo(body.id, body.cvc || null, body.cardholder || null, body.expiresAt || null, body.note || '', body.ownerId || null, body.currency || 'USD')
+    db.cards.updateInfo(body.id, body.cvc || null, body.cardholder || null, body.expiresAt || null, body.note || '', body.ownerId || null, body.currency || 'USD', body.billingAddress || null)
   }
   return NextResponse.json({ ok: true })
 }

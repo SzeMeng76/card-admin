@@ -47,7 +47,8 @@
     "totalBalance": "Total Balance",
     "activeCards": "Active Cards",
     "todayTransactions": "Today's Transactions",
-    "totalUsers": "Total Users"
+    "totalUsers": "Total Users",
+    "txUnit": "txns"
   },
   "cards": {
     "title": "Card Management",
@@ -68,7 +69,8 @@
     "initialBalance": "Initial Balance",
     "cvc": "CVC",
     "cardholder": "Cardholder",
-    "currency": "Currency"
+    "currency": "Currency",
+    "billingAddress": "Billing Address (AVS)"
   },
   "users": {
     "title": "User Management",
@@ -110,6 +112,7 @@
     "activeCards": "Active Cards",
     "totalBalance": "Total Balance",
     "txCount": "Transactions",
-    "todayAmount": "Today's Activity"
+    "todayAmount": "Today's Activity",
+    "txUnit": "txns"
   }
 }

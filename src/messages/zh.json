@@ -47,7 +47,8 @@
     "totalBalance": "总余额",
     "activeCards": "激活卡片",
     "todayTransactions": "今日交易",
-    "totalUsers": "用户总数"
+    "totalUsers": "用户总数",
+    "txUnit": "笔"
   },
   "cards": {
     "title": "卡片管理",
@@ -68,7 +69,8 @@
     "initialBalance": "初始余额",
     "cvc": "CVC",
     "cardholder": "持卡人",
-    "currency": "货币"
+    "currency": "货币",
+    "billingAddress": "账单地址 (AVS)"
   },
   "users": {
     "title": "用户管理",
@@ -110,6 +112,7 @@
     "activeCards": "激活卡片",
     "totalBalance": "总余额",
     "txCount": "交易次数",
-    "todayAmount": "今日交易金额"
+    "todayAmount": "今日交易金额",
+    "txUnit": "笔"
   }
 }

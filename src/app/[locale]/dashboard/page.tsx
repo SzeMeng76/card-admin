@@ -15,7 +15,7 @@ export default async function DashboardPage() {
     { label: t('dashboard.totalCards'), value: stats?.total ?? 0 },
     { label: t('dashboard.activeCards'), value: stats?.active ?? 0 },
     { label: t('dashboard.totalBalance'), value: balanceStr },
-    { label: t('dashboard.todayTransactions'), value: `${todayTx} 笔 / ${todayAmtStr}` },
+    { label: t('dashboard.todayTransactions'), value: `${todayTx} ${t('dashboard.txUnit')} / ${todayAmtStr}` },
     { label: t('dashboard.totalUsers'), value: userCount },
   ]
 

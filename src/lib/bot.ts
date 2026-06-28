@@ -81,7 +81,8 @@ function fmtCards(cards: any[]) {
     `状态: ${c.status === 'active' ? '✅ 正常' : '🔒 封禁'}` +
     (c.cardholder ? `\n持卡人: ${c.cardholder}` : '') +
     (c.expires_at ? `\n有效期: ${(() => { const p = c.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })()}` : '') +
-    (c.cvc ? `\nCVC: ${c.cvc}` : '')
+    (c.cvc ? `\nCVC: ${c.cvc}` : '') +
+    (c.billing_address ? `\n账单地址: ${c.billing_address}` : '')
   ).join('\n\n')
 }
 

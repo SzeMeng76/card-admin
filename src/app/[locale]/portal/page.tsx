@@ -28,7 +28,7 @@ export default async function PortalPage() {
     { label: t('portal.activeCards'), value: activeCards },
     { label: t('portal.totalBalance'), value: balanceStr },
     { label: t('portal.txCount'), value: allTx.length },
-    { label: t('portal.todayAmount'), value: `${todayCount} 笔 / ${todayAmtStr}` },
+    { label: t('portal.todayAmount'), value: `${todayCount} ${t('portal.txUnit')} / ${todayAmtStr}` },
   ]
 
   return (

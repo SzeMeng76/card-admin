@@ -19,6 +19,7 @@ interface Card {
   currency: string
   created_at: string
   expires_at: string | null
+  billing_address: string | null
 }
 
 interface User {
@@ -36,8 +37,8 @@ export default function CardsPage() {
   const [balanceModal, setBalanceModal] = useState<Card | null>(null)
   const [balanceType, setBalanceType] = useState<'topup' | 'deduct'>('topup')
 
-  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD' })
-  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD' })
+  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: '' })
+  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD', billingAddress: '' })
   const [balanceForm, setBalanceForm] = useState({ amount: '', note: '', createdAt: '' })
 
   async function load() {
@@ -65,10 +66,11 @@ export default function CardsPage() {
         cvc: form.cvc || null,
         cardholder: form.cardholder || null,
         currency: form.currency,
+        billingAddress: form.billingAddress || null,
       }),
     })
     setShowAdd(false)
-    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD' })
+    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: '' })
     load()
   }
 
@@ -89,6 +91,7 @@ export default function CardsPage() {
       note: card.note || '',
       ownerId: card.owner_id ? String(card.owner_id) : '',
       currency: card.currency || 'USD',
+      billingAddress: card.billing_address || '',
     })
     setEditModal(card)
   }
@@ -107,6 +110,7 @@ export default function CardsPage() {
         note: editForm.note,
         ownerId: editForm.ownerId ? Number(editForm.ownerId) : null,
         currency: editForm.currency,
+        billingAddress: editForm.billingAddress || null,
       }),
     })
     setEditModal(null)
@@ -207,6 +211,10 @@ export default function CardsPage() {
                 <Input value={form.cardholder} onChange={e => setForm(f => ({ ...f, cardholder: e.target.value }))} />
               </div>
               <div className="space-y-1">
+                <Label>{t('cards.billingAddress')}</Label>
+                <Input value={form.billingAddress} onChange={e => setForm(f => ({ ...f, billingAddress: e.target.value }))} placeholder="e.g. 3401 N. Miami Ave. Ste 230, Miami FL 33127" />
+              </div>
+              <div className="space-y-1">
                 <Label>{t('cards.currency')}</Label>
                 <select className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" value={form.currency} onChange={e => setForm(f => ({ ...f, currency: e.target.value }))}>
                   <option value="USD">USD ($)</option>
@@ -290,6 +298,10 @@ export default function CardsPage() {
               <div className="space-y-1">
                 <Label>{t('common.note')}</Label>
                 <Input value={editForm.note} onChange={e => setEditForm(f => ({ ...f, note: e.target.value }))} />
+              </div>
+              <div className="space-y-1">
+                <Label>{t('cards.billingAddress')}</Label>
+                <Input value={editForm.billingAddress} onChange={e => setEditForm(f => ({ ...f, billingAddress: e.target.value }))} placeholder="e.g. 3401 N. Miami Ave. Ste 230, Miami FL 33127" />
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.currency')}</Label>
