@@ -325,7 +325,7 @@ export default function CardsPage() {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
-              {[t('cards.cardNumber'), t('cards.owner'), t('cards.balance'), t('common.status'), t('cards.expiresAt'), t('common.note'), t('common.actions')].map(h => (
+              {[t('cards.cardNumber'), t('cards.owner'), t('cards.balance'), t('common.status'), t('cards.expiresAt'), t('cards.billingAddress'), t('common.note'), t('common.actions')].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
               ))}
             </tr>
@@ -342,6 +342,7 @@ export default function CardsPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{card.expires_at ? (() => { const p = card.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })() : '—'}</td>
+                <td className="px-4 py-3 text-zinc-400 text-xs max-w-[160px] truncate" title={card.billing_address || ''}>{card.billing_address || '—'}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{card.note || '—'}</td>
                 <td className="px-4 py-3">
                   <div className="flex gap-1">
