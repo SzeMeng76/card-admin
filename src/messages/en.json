@@ -113,6 +113,7 @@
     "totalBalance": "Total Balance",
     "txCount": "Transactions",
     "todayAmount": "Today's Activity",
-    "txUnit": "txns"
+    "txUnit": "txns",
+    "billingAddress": "Billing Address"
   }
 }

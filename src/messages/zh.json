@@ -113,6 +113,7 @@
     "totalBalance": "总余额",
     "txCount": "交易次数",
     "todayAmount": "今日交易金额",
-    "txUnit": "笔"
+    "txUnit": "笔",
+    "billingAddress": "账单地址"
   }
 }

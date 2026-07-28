@@ -16,6 +16,7 @@ interface CardData {
   cardholder: string | null
   currency: string
   note: string
+  billing_address: string | null
 }
 
 interface Transaction {
@@ -92,6 +93,13 @@ export default function CardDetailPage() {
           <p className="text-xs opacity-60 uppercase mb-1">{t('portal.balance')}</p>
           <p className="text-3xl font-bold">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-base font-normal opacity-70">{card.currency}</span></p>
         </div>
+
+        {card.billing_address && (
+          <div className="border-t border-white/20 pt-4">
+            <p className="text-xs opacity-60 uppercase mb-1">{t('portal.billingAddress')}</p>
+            <p className="text-sm">{card.billing_address}</p>
+          </div>
+        )}
       </div>
 
       {card.note && (
