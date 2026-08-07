@@ -14,6 +14,17 @@ export async function GET(request: NextRequest) {
     if (cardId) return NextResponse.json(db.transactions.listByCard(Number(cardId)))
     return NextResponse.json(db.transactions.list(200))
   }
+
+  // For non-admin users
+  if (cardId) {
+    // Verify the card belongs to the user before returning transactions
+    const card = db.cards.findById(Number(cardId))
+    if (!card || card.owner_id !== session.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return NextResponse.json(db.transactions.listByCard(Number(cardId)))
+  }
+
   return NextResponse.json(db.transactions.listByOwner(session.id))
 }
 
