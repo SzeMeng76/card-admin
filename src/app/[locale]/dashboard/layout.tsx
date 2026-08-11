@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getSession } from '@/lib/auth'
 import Nav from '@/components/Nav'
+import Footer from '@/components/Footer'
 
 export default async function DashboardLayout({
   children,
@@ -14,9 +15,10 @@ export default async function DashboardLayout({
   if (!session || session.role !== 'admin') redirect(`/${locale}/login`)
 
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div className="min-h-screen bg-zinc-50 flex flex-col">
       <Nav role="admin" username={session.username} />
-      <main className="max-w-7xl mx-auto px-4 py-6">{children}</main>
+      <main className="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">{children}</main>
+      <Footer />
     </div>
   )
 }

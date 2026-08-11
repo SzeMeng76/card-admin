@@ -87,7 +87,7 @@ export default function Nav({ role, username }: NavProps) {
     <>
       <nav className="border-b border-zinc-200 bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-14 gap-6">
-          <span className="font-semibold text-zinc-900 text-sm">Card Admin</span>
+          <span className="font-semibold text-zinc-900 text-sm whitespace-nowrap">SM ONE <span className="text-indigo-600">CARD MANAGER</span></span>
 
           {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-1 flex-1">

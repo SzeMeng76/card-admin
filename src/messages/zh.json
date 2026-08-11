@@ -30,7 +30,7 @@
     "wrongPassword": "当前密码错误"
   },
   "login": {
-    "title": "卡台管理系统",
+    "title": "SM ONE CARD MANAGER",
     "subtitle": "请登录您的账号",
     "error": "用户名或密码错误"
   },

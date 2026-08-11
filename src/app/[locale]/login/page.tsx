@@ -3,8 +3,10 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { CreditCard } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
+import Footer from '@/components/Footer'
 
 export default function LoginPage() {
   const t = useTranslations()
@@ -43,10 +45,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-indigo-50 via-zinc-50 to-zinc-100 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-transparent">{t('login.title')}</h1>
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600 shadow-lg shadow-indigo-200 mb-4">
+            <CreditCard className="w-7 h-7 text-white" />
+          </div>
+          <h1 className="text-2xl font-bold text-zinc-900 tracking-tight">{t('login.title')}</h1>
           <p className="text-zinc-500 mt-2 text-sm">{t('login.subtitle')}</p>
         </div>
 
@@ -84,6 +89,10 @@ export default function LoginPage() {
             {locale === 'zh' ? 'English' : '中文'}
           </button>
         </div>
+      </div>
+
+      <div className="mt-10">
+        <Footer />
       </div>
     </div>
   )

@@ -129,7 +129,7 @@ export default function TransactionsPage() {
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-xl font-semibold">{t('transactions.title')}</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('transactions.title')}</h1>
         <div className="flex gap-2">
           <Button onClick={() => setShowAdd(true)} className="flex-1 sm:flex-none">{t('transactions.addRecord')}</Button>
           <Button variant="outline" onClick={exportCsv} className="flex-1 sm:flex-none">{t('common.export')}</Button>

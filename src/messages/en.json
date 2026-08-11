@@ -30,7 +30,7 @@
     "wrongPassword": "Current password is incorrect"
   },
   "login": {
-    "title": "Card Admin",
+    "title": "SM ONE CARD MANAGER",
     "subtitle": "Sign in to your account",
     "error": "Invalid username or password"
   },

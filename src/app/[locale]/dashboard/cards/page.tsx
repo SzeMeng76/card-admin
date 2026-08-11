@@ -166,7 +166,7 @@ export default function CardsPage() {
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
-        <h1 className="text-xl font-semibold">{t('cards.title')}</h1>
+        <h1 className="text-2xl font-bold text-zinc-900">{t('cards.title')}</h1>
         <Button onClick={() => setShowAdd(true)} className="w-full sm:w-auto">{t('cards.addCard')}</Button>
       </div>
 
