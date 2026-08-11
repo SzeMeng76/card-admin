@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
 import { getBot } from '@/lib/bot'
+import { adjustCardBalance, BitnobApiError } from '@/lib/bitnob'
 
 export async function POST(request: NextRequest) {
   const session = await getSession()
@@ -17,6 +18,19 @@ export async function POST(request: NextRequest) {
   const newBalance = card.balance + delta
 
   if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+
+  if (card.provider === 'bitnob' && card.provider_card_id) {
+    try {
+      await adjustCardBalance(card.provider_card_id, {
+        amount: Math.round(Math.abs(amount) * 1_000_000),
+        type: type === 'deduct' ? 'withdraw' : 'fund',
+        reference: `CARDADMIN_BAL_${Date.now()}`,
+      })
+    } catch (err) {
+      const message = err instanceof BitnobApiError ? err.message : 'Failed to reach Bitnob'
+      return NextResponse.json({ error: message }, { status: 502 })
+    }
+  }
 
   const createdAtUtc = createdAt ? new Date(createdAt + '+08:00').toISOString() : null
   db.cards.updateBalance(cardId, newBalance)

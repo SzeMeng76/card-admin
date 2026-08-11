@@ -64,6 +64,12 @@ function initSchema(db: Database.Database) {
   if (!colNames.includes('billing_address')) {
     db.exec(`ALTER TABLE cards ADD COLUMN billing_address TEXT`)
   }
+  if (!colNames.includes('provider')) {
+    db.exec(`ALTER TABLE cards ADD COLUMN provider TEXT NOT NULL DEFAULT 'manual'`)
+  }
+  if (!colNames.includes('provider_card_id')) {
+    db.exec(`ALTER TABLE cards ADD COLUMN provider_card_id TEXT`)
+  }
 
   // Migrate: add telegram_id to users if missing
   const userCols = db.prepare(`PRAGMA table_info(users)`).all() as any[]
@@ -124,8 +130,8 @@ export const db = {
       getDb().prepare(`SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.owner_id = ? ORDER BY c.created_at DESC`).all(ownerId) as any[],
     findById: (id: number) =>
       getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(id) as any,
-    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null, currency: string, billingAddress: string | null = null) =>
-      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder, currency, billing_address) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder, currency, billingAddress),
+    create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null, currency: string, billingAddress: string | null = null, provider = 'manual', providerCardId: string | null = null) =>
+      getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, expires_at, cvc, cardholder, currency, billing_address, provider, provider_card_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)').run(cardNumber, ownerId, balance, note, expiresAt, cvc, cardholder, currency, billingAddress, provider, providerCardId),
     updateStatus: (id: number, status: string) =>
       getDb().prepare('UPDATE cards SET status = ? WHERE id = ?').run(status, id),
     updateInfo: (id: number, cvc: string | null, cardholder: string | null, expiresAt: string | null, note: string, ownerId: number | null, currency: string, billingAddress: string | null = null) =>
