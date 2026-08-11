@@ -362,3 +362,24 @@ export async function listCards(params: ListCardsParams = {}): Promise<CardsPage
   }
   return json.data as CardsPage
 }
+
+export interface CardSecureDetails {
+  card_id: string
+  card_number: string
+  cvv: string
+  expiry_month: string
+  expiry_year: string
+  name: string
+}
+
+export async function getCardSecureDetails(cardId: string): Promise<CardSecureDetails> {
+  const res = await fetch(`${BASE_URL}/api/cards/${cardId}/secure`, {
+    method: 'GET',
+    headers: authHeaders(null),
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok || !json?.success) {
+    throw new BitnobApiError(json?.message || `Bitnob API error (${res.status})`, res.status)
+  }
+  return json.data.details as CardSecureDetails
+}

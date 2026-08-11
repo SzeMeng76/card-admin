@@ -153,7 +153,11 @@
     "title": "Bitnob Cards",
     "activeCards": "Active / Completed Cards",
     "failedCards": "Failed Cards",
-    "failureReason": "Failure Reason"
+    "failureReason": "Failure Reason",
+    "cardDetails": "Card Details",
+    "showDetails": "Reveal Details",
+    "hideDetails": "Hide",
+    "sensitiveWarning": "Click Reveal to show full card number, CVV and expiry. Do not share or screenshot."
   },
   "portal": {
     "title": "My Cards",

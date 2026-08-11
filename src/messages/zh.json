@@ -153,7 +153,11 @@
     "title": "Bitnob 卡片",
     "activeCards": "已激活卡片",
     "failedCards": "开卡失败记录",
-    "failureReason": "失败原因"
+    "failureReason": "失败原因",
+    "cardDetails": "卡片资料",
+    "showDetails": "查看完整资料",
+    "hideDetails": "隐藏",
+    "sensitiveWarning": "点击查看完整卡号、CVV 和有效期。请勿截图或泄露。"
   },
   "portal": {
     "title": "我的卡片",

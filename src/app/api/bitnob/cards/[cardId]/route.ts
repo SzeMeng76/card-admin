@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { getSession } from '@/lib/auth'
-import { updateCardStatus, adjustCardBalance, BitnobApiError } from '@/lib/bitnob'
+import { updateCardStatus, adjustCardBalance, getCardSecureDetails, BitnobApiError } from '@/lib/bitnob'
+
+export async function GET(_request: NextRequest, { params }: { params: Promise<{ cardId: string }> }) {
+  const session = await getSession()
+  if (!session || session.role !== 'admin') return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+  const { cardId } = await params
+  try {
+    const details = await getCardSecureDetails(cardId)
+    return NextResponse.json(details)
+  } catch (err) {
+    const message = err instanceof BitnobApiError ? err.message : 'Failed to reach Bitnob'
+    return NextResponse.json({ error: message }, { status: 502 })
+  }
+}
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ cardId: string }> }) {
   const session = await getSession()

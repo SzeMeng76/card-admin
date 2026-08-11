@@ -21,6 +21,15 @@ interface BitnobCard {
   created_at: string
 }
 
+interface CardSecureDetails {
+  card_id: string
+  card_number: string
+  cvv: string
+  expiry_month: string
+  expiry_year: string
+  name: string
+}
+
 interface CardTx {
   id: string
   type: string
@@ -65,6 +74,12 @@ export default function BitnobCardsPage() {
   const [txList, setTxList] = useState<CardTx[]>([])
   const [txLoading, setTxLoading] = useState(false)
   const [txError, setTxError] = useState('')
+
+  const [detailsModal, setDetailsModal] = useState<BitnobCard | null>(null)
+  const [secureDetails, setSecureDetails] = useState<CardSecureDetails | null>(null)
+  const [detailsLoading, setDetailsLoading] = useState(false)
+  const [detailsError, setDetailsError] = useState('')
+  const [showSensitive, setShowSensitive] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -196,6 +211,27 @@ export default function BitnobCardsPage() {
       setTxError(t('cards.txLoadFailed'))
     } finally {
       setTxLoading(false)
+    }
+  }
+
+  async function viewDetails(card: BitnobCard) {
+    setDetailsModal(card)
+    setDetailsLoading(true)
+    setDetailsError('')
+    setSecureDetails(null)
+    setShowSensitive(false)
+    try {
+      const res = await fetch(`/api/bitnob/cards/${card.id}`)
+      if (!res.ok) {
+        const d = await res.json().catch(() => ({}))
+        setDetailsError(d.error || 'Failed to load card details')
+        return
+      }
+      setSecureDetails(await res.json())
+    } catch {
+      setDetailsError('Failed to load card details')
+    } finally {
+      setDetailsLoading(false)
     }
   }
 
@@ -347,6 +383,60 @@ export default function BitnobCardsPage() {
         </div>
       )}
 
+      {/* Card Details Modal */}
+      {detailsModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+            <h2 className="font-semibold mb-1">{t('bitnobCards.cardDetails')}</h2>
+            <p className="text-sm text-zinc-500 mb-4">{detailsModal.name}</p>
+            {detailsLoading ? (
+              <div className="py-8 text-center text-zinc-400 text-sm">{t('common.loading')}</div>
+            ) : detailsError ? (
+              <div className="rounded-lg bg-red-50 border border-red-100 text-red-700 text-sm px-3 py-2">{detailsError}</div>
+            ) : secureDetails ? (
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-zinc-500 mb-1">{t('cards.cardNumber')}</p>
+                  <p className="font-mono text-sm tracking-widest">
+                    {showSensitive
+                      ? `${secureDetails.card_number.slice(0,4)} ${secureDetails.card_number.slice(4,8)} ${secureDetails.card_number.slice(8,12)} ${secureDetails.card_number.slice(12)}`
+                      : detailsModal.masked_pan}
+                  </p>
+                </div>
+                <div className="flex gap-6">
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">{t('cards.expiresAt')}</p>
+                    <p className="font-mono text-sm">{showSensitive ? `${secureDetails.expiry_month}/${secureDetails.expiry_year}` : '**/**'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">{t('cards.cvc')}</p>
+                    <p className="font-mono text-sm">{showSensitive ? secureDetails.cvv : '***'}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-xs text-zinc-500 mb-1">{t('cards.cardholder')}</p>
+                  <p className="text-sm">{secureDetails.name}</p>
+                </div>
+                {!showSensitive && (
+                  <div className="rounded-lg bg-amber-50 border border-amber-100 text-amber-700 text-xs px-3 py-2">
+                    {t('bitnobCards.sensitiveWarning')}
+                  </div>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <Button size="sm" variant={showSensitive ? 'destructive' : 'default'} onClick={() => setShowSensitive(v => !v)}>
+                    {showSensitive ? t('bitnobCards.hideDetails') : t('bitnobCards.showDetails')}
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => { setDetailsModal(null); setShowSensitive(false) }}>{t('common.cancel')}</Button>
+                </div>
+              </div>
+            ) : null}
+            {!detailsLoading && !secureDetails && !detailsError && (
+              <Button type="button" variant="outline" onClick={() => { setDetailsModal(null) }}>{t('common.cancel')}</Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {loading ? (
         <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">{t('common.loading')}</div>
       ) : (
@@ -385,6 +475,7 @@ export default function BitnobCardsPage() {
                                   <Button size="sm" variant="outline" onClick={() => { setFundModal(card); setFundAction('fund') }}>{t('cards.topup')}</Button>
                                 )}
                                 <Button size="sm" variant="outline" onClick={() => viewTx(card)}>{t('cards.viewTx')}</Button>
+                                <Button size="sm" variant="outline" onClick={() => viewDetails(card)}>{t('bitnobCards.cardDetails')}</Button>
                                 {(card.available_actions.includes('FREEZE') || card.available_actions.includes('UNFREEZE') || card.status === 'frozen') && (
                                   <Button size="sm" variant="outline" onClick={() => toggleStatus(card)}>
                                     {card.status === 'active' ? t('cards.freeze') : t('cards.unfreeze')}
@@ -412,6 +503,7 @@ export default function BitnobCardsPage() {
                         <div className="flex flex-wrap gap-1">
                           {card.available_actions.includes('FUND') && <Button size="sm" variant="outline" onClick={() => { setFundModal(card); setFundAction('fund') }}>{t('cards.topup')}</Button>}
                           <Button size="sm" variant="outline" onClick={() => viewTx(card)}>{t('cards.viewTx')}</Button>
+                                <Button size="sm" variant="outline" onClick={() => viewDetails(card)}>{t('bitnobCards.cardDetails')}</Button>
                           {(card.available_actions.includes('FREEZE') || card.status === 'frozen') && (
                             <Button size="sm" variant="outline" onClick={() => toggleStatus(card)}>{card.status === 'active' ? t('cards.freeze') : t('cards.unfreeze')}</Button>
                           )}
