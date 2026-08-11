@@ -79,14 +79,14 @@ export default function UsersPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-xl font-semibold">{t('users.title')}</h1>
-        <Button onClick={() => setShowAdd(true)}>{t('users.addUser')}</Button>
+        <Button onClick={() => setShowAdd(true)} className="w-full sm:w-auto">{t('users.addUser')}</Button>
       </div>
 
       {showAdd && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('users.addUser')}</h2>
             <form onSubmit={addUser} className="space-y-3">
               <div className="space-y-1">
@@ -118,8 +118,8 @@ export default function UsersPage() {
       )}
 
       {tgModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-1">绑定 Telegram — {tgModal.username}</h2>
             <p className="text-xs text-zinc-400 mb-4">填入用户的 Telegram 数字 ID，留空则解除绑定。</p>
             <form onSubmit={setTelegramId} className="space-y-3">
@@ -141,8 +141,8 @@ export default function UsersPage() {
       )}
 
       {resetModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('users.resetPassword')} — {resetModal.username}</h2>
             <form onSubmit={resetPassword} className="space-y-3">
               <div className="space-y-1">
@@ -158,12 +158,13 @@ export default function UsersPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-xl border border-zinc-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
               {[t('common.username'), t('users.role'), 'Telegram', t('common.createdAt'), t('common.actions')].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
+                <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -193,6 +194,31 @@ export default function UsersPage() {
             ))}
           </tbody>
         </table>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {users.map(user => (
+          <div key={user.id} className="bg-white rounded-xl border border-zinc-200 p-4">
+            <div className="flex items-start justify-between mb-2">
+              <div className="font-medium">{user.username}</div>
+              <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-50 text-purple-700' : 'bg-zinc-100 text-zinc-600'}`}>
+                {t(`users.${user.role as 'admin' | 'user'}`)}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
+              <div>Telegram: <span className={user.telegram_id ? 'text-blue-500' : 'text-zinc-400'}>{user.telegram_id || '—'}</span></div>
+              <div className="text-right">{user.created_at.split('T')[0]}</div>
+            </div>
+            <div className="flex flex-wrap gap-1">
+              <Button size="sm" variant="outline" onClick={() => { setTgModal(user); setTgId(user.telegram_id ? String(user.telegram_id) : '') }}>TG</Button>
+              <Button size="sm" variant="outline" onClick={() => setResetModal(user)}>{t('users.resetPassword')}</Button>
+              {user.role !== 'admin' && (
+                <Button size="sm" variant="destructive" onClick={() => deleteUser(user.id)}>{t('common.delete')}</Button>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )

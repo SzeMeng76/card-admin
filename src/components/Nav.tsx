@@ -25,6 +25,7 @@ export default function Nav({ role, username }: NavProps) {
   const [showTelegram, setShowTelegram] = useState(false)
   const [tgLink, setTgLink] = useState('')
   const [tgLoading, setTgLoading] = useState(false)
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
 
   const adminLinks = [
     { href: `/${locale}/dashboard`, label: t('nav.dashboard') },
@@ -87,13 +88,15 @@ export default function Nav({ role, username }: NavProps) {
       <nav className="border-b border-zinc-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 flex items-center h-14 gap-6">
           <span className="font-semibold text-zinc-900 text-sm">Card Admin</span>
-          <div className="flex items-center gap-1 flex-1">
+
+          {/* Desktop nav */}
+          <div className="hidden md:flex items-center gap-1 flex-1">
             {links.map(link => (
               <Link
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  'px-3 py-1.5 rounded-md text-sm transition-colors',
+                  'px-3 py-1.5 rounded-md text-sm transition-colors whitespace-nowrap',
                   pathname === link.href
                     ? 'bg-zinc-100 text-zinc-900 font-medium'
                     : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
@@ -103,7 +106,7 @@ export default function Nav({ role, username }: NavProps) {
               </Link>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-3">
             <button onClick={switchLocale} className="text-xs text-zinc-400 hover:text-zinc-600">
               {locale === 'zh' ? 'EN' : '中文'}
             </button>
@@ -117,12 +120,63 @@ export default function Nav({ role, username }: NavProps) {
               {t('common.logout')}
             </button>
           </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setShowMobileMenu(!showMobileMenu)}
+            className="ml-auto md:hidden text-zinc-600 hover:text-zinc-900 p-2"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              {showMobileMenu ? (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {showMobileMenu && (
+          <div className="md:hidden border-t border-zinc-200 bg-white">
+            <div className="px-4 py-2 space-y-1">
+              {links.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setShowMobileMenu(false)}
+                  className={cn(
+                    'block px-3 py-2 rounded-md text-sm transition-colors',
+                    pathname === link.href
+                      ? 'bg-zinc-100 text-zinc-900 font-medium'
+                      : 'text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50'
+                  )}
+                >
+                  {link.label}
+                </Link>
+              ))}
+              <div className="pt-2 border-t border-zinc-100 mt-2 space-y-1">
+                <button onClick={() => { openTelegram(); setShowMobileMenu(false) }} className="w-full text-left px-3 py-2 text-sm text-zinc-500 hover:text-blue-500 hover:bg-zinc-50 rounded-md">
+                  绑定 Telegram
+                </button>
+                <button onClick={() => { setShowChangePw(true); setShowMobileMenu(false) }} className="w-full text-left px-3 py-2 text-sm text-zinc-500 hover:text-zinc-900 hover:bg-zinc-50 rounded-md">
+                  {username} - {t('common.changePassword')}
+                </button>
+                <button onClick={switchLocale} className="w-full text-left px-3 py-2 text-sm text-zinc-400 hover:text-zinc-600 hover:bg-zinc-50 rounded-md">
+                  {locale === 'zh' ? 'Switch to English' : '切换到中文'}
+                </button>
+                <button onClick={logout} className="w-full text-left px-3 py-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md">
+                  {t('common.logout')}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </nav>
 
       {showTelegram && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-2">绑定 Telegram</h2>
             <p className="text-sm text-zinc-500 mb-4">点击下方链接，在 Telegram 中完成绑定。链接 5 分钟内有效。</p>
             {tgLoading && <p className="text-sm text-zinc-400">生成链接中...</p>}
@@ -140,8 +194,8 @@ export default function Nav({ role, username }: NavProps) {
       )}
 
       {showChangePw && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('common.changePassword')}</h2>
             <form onSubmit={changePassword} className="space-y-3">
               <div className="space-y-1">

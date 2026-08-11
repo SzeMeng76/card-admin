@@ -128,18 +128,18 @@ export default function TransactionsPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-xl font-semibold">{t('transactions.title')}</h1>
         <div className="flex gap-2">
-          <Button onClick={() => setShowAdd(true)}>{t('transactions.addRecord')}</Button>
-          <Button variant="outline" onClick={exportCsv}>{t('common.export')}</Button>
+          <Button onClick={() => setShowAdd(true)} className="flex-1 sm:flex-none">{t('transactions.addRecord')}</Button>
+          <Button variant="outline" onClick={exportCsv} className="flex-1 sm:flex-none">{t('common.export')}</Button>
         </div>
       </div>
 
       {/* Add Transaction Modal */}
       {showAdd && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('transactions.addRecord')}</h2>
             <form onSubmit={addTransaction} className="space-y-3">
               <div className="space-y-1">
@@ -197,8 +197,8 @@ export default function TransactionsPage() {
 
       {/* Edit Transaction Modal */}
       {editModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('common.edit')} — <span className="font-mono text-xs">{editModal.card_number}</span></h2>
             <form onSubmit={saveEdit} className="space-y-3">
               <div className="space-y-1">
@@ -226,12 +226,13 @@ export default function TransactionsPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
+      {/* Desktop table */}
+      <div className="hidden sm:block bg-white rounded-xl border border-zinc-200 overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
               {[t('transactions.cardNumber'), t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt'), t('common.actions')].map(h => (
-                <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
+                <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
               ))}
             </tr>
           </thead>
@@ -262,6 +263,37 @@ export default function TransactionsPage() {
           </tbody>
         </table>
         {transactions.length === 0 && <p className="text-center py-8 text-zinc-400 text-sm">—</p>}
+      </div>
+
+      {/* Mobile cards */}
+      <div className="sm:hidden space-y-3">
+        {transactions.length === 0 ? (
+          <div className="bg-white rounded-xl border border-zinc-200 py-16 text-center text-zinc-400 text-sm">—</div>
+        ) : (
+          transactions.map(tx => (
+            <div key={tx.id} className="bg-white rounded-xl border border-zinc-200 p-4">
+              <div className="flex items-start justify-between mb-2">
+                <span className="font-mono text-xs">{tx.card_number}</span>
+                <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${typeColors[tx.type] || 'bg-zinc-100 text-zinc-600'}`}>
+                  {typeLabel(tx.type)}
+                </span>
+              </div>
+              <div className={`text-lg font-medium mb-2 ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                {tx.amount > 0 ? '+' : ''}{cs(tx.currency)}{Number(tx.amount).toFixed(2)}
+              </div>
+              <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
+                <div>{t('transactions.balanceAfter')}: <span className="text-zinc-700">{cs(tx.currency)}{Number(tx.balance_after).toFixed(2)}</span></div>
+                <div className="text-right">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleDateString()}</div>
+                {tx.note && <div className="col-span-2">{t('common.note')}: <span className="text-zinc-700">{tx.note}</span></div>}
+                {tx.created_by_name && <div className="col-span-2">{t('transactions.operator')}: <span className="text-zinc-700">{tx.created_by_name}</span></div>}
+              </div>
+              <div className="flex flex-wrap gap-1">
+                <Button size="sm" variant="outline" onClick={() => openEdit(tx)}>{t('common.edit')}</Button>
+                <Button size="sm" variant="destructive" onClick={() => deleteTx(tx.id)}>{t('common.delete')}</Button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   )
