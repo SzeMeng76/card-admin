@@ -37,6 +37,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "cards": "Cards",
+    "bitnobCards": "Bitnob Cards",
     "wallet": "Wallet",
     "users": "Users",
     "transactions": "Transactions",
@@ -147,6 +148,12 @@
     "manual": "Manual",
     "addRecord": "Add Record",
     "confirmDelete": "Delete this transaction record?"
+  },
+  "bitnobCards": {
+    "title": "Bitnob Cards",
+    "activeCards": "Active / Completed Cards",
+    "failedCards": "Failed Cards",
+    "failureReason": "Failure Reason"
   },
   "portal": {
     "title": "My Cards",

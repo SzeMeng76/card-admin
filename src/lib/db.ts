@@ -70,6 +70,7 @@ function initSchema(db: Database.Database) {
   if (!colNames.includes('provider_card_id')) {
     db.exec(`ALTER TABLE cards ADD COLUMN provider_card_id TEXT`)
   }
+  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_cards_provider_card_id ON cards(provider_card_id) WHERE provider_card_id IS NOT NULL`)
 
   // Migrate: add telegram_id to users if missing
   const userCols = db.prepare(`PRAGMA table_info(users)`).all() as any[]
@@ -144,6 +145,19 @@ export const db = {
       getDb().prepare('SELECT COUNT(*) as total, SUM(balance) as totalBalance, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active FROM cards').get('active') as any,
     balanceByCurrency: () =>
       getDb().prepare('SELECT COALESCE(currency, \'USD\') as currency, SUM(balance) as total FROM cards GROUP BY currency').all() as { currency: string; total: number }[],
+    findByProviderCardId: (providerCardId: string) =>
+      getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.provider_card_id = ?').get(providerCardId) as any,
+    listByProvider: (provider: string) =>
+      getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.provider = ?').all(provider) as any[],
+    setOwnerByProviderCardId: (providerCardId: string, ownerId: number | null, cardNumber: string, cardholder: string, currency: string) => {
+      const existing = getDb().prepare('SELECT id FROM cards WHERE provider_card_id = ?').get(providerCardId) as any
+      if (existing) {
+        getDb().prepare('UPDATE cards SET owner_id = ? WHERE id = ?').run(ownerId, existing.id)
+      } else {
+        getDb().prepare('INSERT INTO cards (card_number, owner_id, balance, note, cardholder, currency, provider, provider_card_id) VALUES (?, ?, 0, ?, ?, ?, ?, ?)')
+          .run(cardNumber, ownerId, `Issued via Bitnob`, cardholder, currency, 'bitnob', providerCardId)
+      }
+    },
   },
   transactions: {
     list: (limit = 100) =>

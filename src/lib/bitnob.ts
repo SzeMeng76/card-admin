@@ -318,3 +318,47 @@ export async function getCardTransactions(cardId: string, params: ListCardTransa
   }
   return json.data as CardTransactionsPage
 }
+
+export async function updateCardStatus(cardId: string, status: 'active' | 'frozen'): Promise<BitnobCard> {
+  const res = await fetch(`${BASE_URL}/api/cards/${cardId}/status`, {
+    method: 'POST',
+    headers: authHeaders({ status }),
+    body: JSON.stringify({ status }),
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok || !json?.success) {
+    throw new BitnobApiError(json?.message || `Bitnob API error (${res.status})`, res.status)
+  }
+  return json.data.card as BitnobCard
+}
+
+export interface ListCardsParams {
+  cursor?: string
+  limit?: number
+}
+
+export interface CardsPage {
+  cards: BitnobCard[]
+  page_info: {
+    has_next_page: boolean
+    has_previous_page: boolean
+    total: number
+  }
+}
+
+export async function listCards(params: ListCardsParams = {}): Promise<CardsPage> {
+  const qs = new URLSearchParams()
+  if (params.cursor) qs.set('cursor', params.cursor)
+  if (params.limit) qs.set('limit', String(params.limit))
+  const query = qs.toString()
+
+  const res = await fetch(`${BASE_URL}/api/cards${query ? `?${query}` : ''}`, {
+    method: 'GET',
+    headers: authHeaders(null),
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok || !json?.success) {
+    throw new BitnobApiError(json?.message || `Bitnob API error (${res.status})`, res.status)
+  }
+  return json.data as CardsPage
+}

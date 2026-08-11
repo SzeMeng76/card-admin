@@ -37,6 +37,7 @@
   "nav": {
     "dashboard": "控制台",
     "cards": "卡片管理",
+    "bitnobCards": "Bitnob 卡片",
     "wallet": "钱包",
     "users": "用户管理",
     "transactions": "交易记录",
@@ -147,6 +148,12 @@
     "manual": "手动",
     "addRecord": "添加记录",
     "confirmDelete": "确认删除此交易记录？"
+  },
+  "bitnobCards": {
+    "title": "Bitnob 卡片",
+    "activeCards": "已激活卡片",
+    "failedCards": "开卡失败记录",
+    "failureReason": "失败原因"
   },
   "portal": {
     "title": "我的卡片",
