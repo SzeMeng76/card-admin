@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { Wifi, ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cs } from '@/lib/currency'
 
@@ -62,19 +63,22 @@ export default function CardDetailPage() {
       </Button>
 
       {/* Card visual */}
-      <div className="bg-gradient-to-br from-zinc-800 to-zinc-600 text-white rounded-2xl p-6 space-y-6 mb-6 shadow-xl">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-medium uppercase tracking-widest opacity-70">Virtual Card</span>
+      <div className="relative bg-gradient-to-br from-indigo-600 via-indigo-700 to-zinc-900 text-white rounded-2xl p-6 space-y-6 mb-6 shadow-xl overflow-hidden">
+        <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-white/5" />
+        <div className="absolute -right-4 top-16 w-24 h-24 rounded-full bg-white/5" />
+
+        <div className="relative flex items-center justify-between">
+          <div className="w-10 h-8 rounded-md bg-gradient-to-br from-amber-300 to-amber-500 opacity-90" />
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${card.status === 'active' ? 'bg-green-400/20 text-green-300' : 'bg-red-400/20 text-red-300'}`}>
             {t(`common.${card.status as 'active' | 'frozen'}`)}
           </span>
         </div>
 
-        <p className="font-mono text-2xl tracking-widest">
+        <p className="relative font-mono text-2xl tracking-widest">
           {card.card_number.match(/.{1,4}/g)?.join(' ') || card.card_number}
         </p>
 
-        <div className="flex items-end justify-between">
+        <div className="relative flex items-end justify-between">
           <div>
             <p className="text-xs opacity-60 uppercase mb-1">{t('portal.cardholder')}</p>
             <p className="font-medium">{card.cardholder || '—'}</p>
@@ -89,13 +93,15 @@ export default function CardDetailPage() {
           </div>
         </div>
 
-        <div className="border-t border-white/20 pt-4">
+        <Wifi className="relative w-6 h-6 opacity-50 rotate-90 -mt-2" />
+
+        <div className="relative border-t border-white/20 pt-4">
           <p className="text-xs opacity-60 uppercase mb-1">{t('portal.balance')}</p>
           <p className="text-3xl font-bold">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-base font-normal opacity-70">{card.currency}</span></p>
         </div>
 
         {card.billing_address && (
-          <div className="border-t border-white/20 pt-4">
+          <div className="relative border-t border-white/20 pt-4">
             <p className="text-xs opacity-60 uppercase mb-1">{t('portal.billingAddress')}</p>
             <p className="text-sm">{card.billing_address}</p>
           </div>
@@ -107,35 +113,39 @@ export default function CardDetailPage() {
       )}
 
       {/* Transactions */}
-      <h2 className="font-semibold mb-3">{t('transactions.title')}</h2>
-      <div className="bg-white rounded-xl border border-zinc-200 overflow-hidden">
-        {transactions.length === 0 ? (
-          <p className="text-center py-8 text-zinc-400 text-sm">—</p>
-        ) : (
-          <table className="w-full text-sm">
-            <thead className="bg-zinc-50 border-b border-zinc-200">
-              <tr>
-                {[t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('common.createdAt')].map(h => (
-                  <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs">{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-zinc-100">
-              {transactions.map(tx => (
-                <tr key={tx.id} className="hover:bg-zinc-50">
-                  <td className="px-4 py-3 text-xs">{tx.type}</td>
-                  <td className={`px-4 py-3 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {tx.amount > 0 ? '+' : ''}{cs(card.currency)}{Number(tx.amount).toFixed(2)}
-                  </td>
-                  <td className="px-4 py-3">{cs(card.currency)}{Number(tx.balance_after).toFixed(2)}</td>
-                  <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
-                  <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+      <h2 className="font-semibold mb-3 text-zinc-900">{t('transactions.title')}</h2>
+      {transactions.length === 0 ? (
+        <div className="bg-white rounded-2xl shadow-md py-12 text-center text-zinc-400 text-sm">—</div>
+      ) : (
+        <div className="bg-white rounded-2xl shadow-md divide-y divide-zinc-100 overflow-hidden">
+          {transactions.map(tx => {
+            const isPositive = tx.amount > 0
+            const Icon = tx.type === 'topup' ? ArrowDownRight : tx.type === 'deduct' ? ArrowUpRight : RefreshCw
+            const iconBg = isPositive ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'
+            return (
+              <div key={tx.id} className="flex items-center gap-3 px-4 py-3.5 hover:bg-zinc-50 transition-colors">
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${iconBg}`}>
+                  <Icon className="w-4 h-4" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-zinc-900 truncate">
+                    {tx.type === 'topup' ? t('transactions.topup') : tx.type === 'deduct' ? t('transactions.deduct') : t('transactions.manual')}
+                  </p>
+                  <p className="text-xs text-zinc-400 truncate">
+                    {tx.note || new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className={`text-sm font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {isPositive ? '+' : ''}{cs(card.currency)}{Number(tx.amount).toFixed(2)}
+                  </p>
+                  <p className="text-xs text-zinc-400">{cs(card.currency)}{Number(tx.balance_after).toFixed(2)}</p>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
