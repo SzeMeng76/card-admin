@@ -12,12 +12,12 @@ const Button = React.forwardRef<
     <button
       ref={ref}
       className={cn(
-        'inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50',
+        'inline-flex items-center justify-center rounded-lg font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-95',
         {
-          'bg-zinc-900 text-white hover:bg-zinc-700': variant === 'default',
-          'border border-zinc-300 bg-white hover:bg-zinc-50': variant === 'outline',
+          'bg-gradient-to-br from-zinc-900 to-zinc-800 text-white hover:shadow-lg hover:from-zinc-800 hover:to-zinc-700': variant === 'default',
+          'border border-zinc-200 bg-white hover:bg-zinc-50 hover:border-zinc-300 hover:shadow-sm': variant === 'outline',
           'hover:bg-zinc-100': variant === 'ghost',
-          'bg-red-600 text-white hover:bg-red-700': variant === 'destructive',
+          'bg-gradient-to-br from-red-600 to-red-700 text-white hover:shadow-lg hover:from-red-700 hover:to-red-800': variant === 'destructive',
         },
         {
           'h-10 px-4 py-2 text-sm': size === 'default',

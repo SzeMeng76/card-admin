@@ -86,7 +86,7 @@ export default function UsersPage() {
 
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('users.addUser')}</h2>
             <form onSubmit={addUser} className="space-y-3">
               <div className="space-y-1">
@@ -119,7 +119,7 @@ export default function UsersPage() {
 
       {tgModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-1">绑定 Telegram — {tgModal.username}</h2>
             <p className="text-xs text-zinc-400 mb-4">填入用户的 Telegram 数字 ID，留空则解除绑定。</p>
             <form onSubmit={setTelegramId} className="space-y-3">
@@ -142,7 +142,7 @@ export default function UsersPage() {
 
       {resetModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('users.resetPassword')} — {resetModal.username}</h2>
             <form onSubmit={resetPassword} className="space-y-3">
               <div className="space-y-1">
@@ -159,7 +159,7 @@ export default function UsersPage() {
       )}
 
       {/* Desktop table */}
-      <div className="hidden sm:block bg-white rounded-xl border border-zinc-200 overflow-hidden overflow-x-auto">
+      <div className="hidden sm:block bg-white rounded-2xl shadow-md overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
@@ -173,7 +173,7 @@ export default function UsersPage() {
               <tr key={user.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-medium">{user.username}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-50 text-purple-700' : 'bg-zinc-100 text-zinc-600'}`}>
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-gradient-to-br from-purple-50 to-violet-50 text-purple-700 border border-purple-100' : 'bg-gradient-to-br from-zinc-50 to-slate-50 text-zinc-600 border border-zinc-200'}`}>
                     {t(`users.${user.role as 'admin' | 'user'}`)}
                   </span>
                 </td>
@@ -199,7 +199,7 @@ export default function UsersPage() {
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
         {users.map(user => (
-          <div key={user.id} className="bg-white rounded-xl border border-zinc-200 p-4">
+          <div key={user.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
             <div className="flex items-start justify-between mb-2">
               <div className="font-medium">{user.username}</div>
               <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-50 text-purple-700' : 'bg-zinc-100 text-zinc-600'}`}>

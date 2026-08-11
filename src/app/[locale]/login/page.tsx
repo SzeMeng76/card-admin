@@ -43,14 +43,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-zinc-50">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-zinc-100 p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-zinc-900">{t('login.title')}</h1>
-          <p className="text-zinc-500 mt-1 text-sm">{t('login.subtitle')}</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-br from-zinc-900 to-zinc-700 bg-clip-text text-transparent">{t('login.title')}</h1>
+          <p className="text-zinc-500 mt-2 text-sm">{t('login.subtitle')}</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-6">
+        <div className="bg-white rounded-2xl shadow-xl p-8 border border-zinc-100">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="username">{t('common.username')}</Label>

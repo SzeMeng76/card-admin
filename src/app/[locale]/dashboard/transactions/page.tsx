@@ -112,9 +112,9 @@ export default function TransactionsPage() {
   }
 
   const typeColors: Record<string, string> = {
-    topup: 'bg-green-50 text-green-700',
-    deduct: 'bg-red-50 text-red-700',
-    manual: 'bg-blue-50 text-blue-700',
+    topup: 'bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 border border-green-100',
+    deduct: 'bg-gradient-to-br from-red-50 to-rose-50 text-red-700 border border-red-100',
+    manual: 'bg-gradient-to-br from-blue-50 to-cyan-50 text-blue-700 border border-blue-100',
   }
 
   const typeLabel = (type: string) => {
@@ -139,7 +139,7 @@ export default function TransactionsPage() {
       {/* Add Transaction Modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('transactions.addRecord')}</h2>
             <form onSubmit={addTransaction} className="space-y-3">
               <div className="space-y-1">
@@ -198,7 +198,7 @@ export default function TransactionsPage() {
       {/* Edit Transaction Modal */}
       {editModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('common.edit')} — <span className="font-mono text-xs">{editModal.card_number}</span></h2>
             <form onSubmit={saveEdit} className="space-y-3">
               <div className="space-y-1">
@@ -227,7 +227,7 @@ export default function TransactionsPage() {
       )}
 
       {/* Desktop table */}
-      <div className="hidden sm:block bg-white rounded-xl border border-zinc-200 overflow-hidden overflow-x-auto">
+      <div className="hidden sm:block bg-white rounded-2xl shadow-md overflow-hidden overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
@@ -241,7 +241,7 @@ export default function TransactionsPage() {
               <tr key={tx.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-mono text-xs">{tx.card_number}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${typeColors[tx.type] || 'bg-zinc-100 text-zinc-600'}`}>
+                  <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[tx.type] || 'bg-zinc-100 text-zinc-600'}`}>
                     {typeLabel(tx.type)}
                   </span>
                 </td>
@@ -262,16 +262,16 @@ export default function TransactionsPage() {
             ))}
           </tbody>
         </table>
-        {transactions.length === 0 && <p className="text-center py-8 text-zinc-400 text-sm">—</p>}
+        {transactions.length === 0 && <p className="text-center py-12 text-zinc-400 text-sm">—</p>}
       </div>
 
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
         {transactions.length === 0 ? (
-          <div className="bg-white rounded-xl border border-zinc-200 py-16 text-center text-zinc-400 text-sm">—</div>
+          <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">—</div>
         ) : (
           transactions.map(tx => (
-            <div key={tx.id} className="bg-white rounded-xl border border-zinc-200 p-4">
+            <div key={tx.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
               <div className="flex items-start justify-between mb-2">
                 <span className="font-mono text-xs">{tx.card_number}</span>
                 <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${typeColors[tx.type] || 'bg-zinc-100 text-zinc-600'}`}>

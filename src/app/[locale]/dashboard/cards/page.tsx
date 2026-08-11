@@ -193,7 +193,7 @@ export default function CardsPage() {
       {/* Add Card Modal */}
       {showAdd && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-4">{t('cards.addCard')}</h2>
             <form onSubmit={addCard} className="space-y-3">
               <div className="space-y-1">
@@ -258,7 +258,7 @@ export default function CardsPage() {
       {/* Balance Modal */}
       {balanceModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-sm shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-1">{balanceModal.card_number}</h2>
             <p className="text-sm text-zinc-500 mb-4">{t('cards.balance')}: {cs(balanceModal.currency)}{Number(balanceModal.balance).toFixed(2)}</p>
             <div className="flex gap-2 mb-4">
@@ -290,7 +290,7 @@ export default function CardsPage() {
       {/* Edit Card Modal */}
       {editModal && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-xl my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-1">{t('common.edit')} — <span className="font-mono text-sm">{editModal.card_number}</span></h2>
             <form onSubmit={saveEdit} className="space-y-3 mt-4">
               <div className="space-y-1">
@@ -345,17 +345,17 @@ export default function CardsPage() {
       )}
 
       {loading ? (
-        <div className="bg-white rounded-xl border border-zinc-200 py-16 text-center text-zinc-400 text-sm">
+        <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">
           {t('common.loading')}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-white rounded-xl border border-zinc-200 py-16 text-center text-zinc-400 text-sm">
+        <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">
           {t('cards.noResults')}
         </div>
       ) : (
         <>
           {/* Desktop table */}
-          <div className="hidden sm:block bg-white rounded-xl border border-zinc-200 overflow-hidden overflow-x-auto">
+          <div className="hidden sm:block bg-white rounded-2xl shadow-md overflow-hidden overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 border-b border-zinc-200">
                 <tr>
@@ -371,7 +371,7 @@ export default function CardsPage() {
                     <td className="px-4 py-3 text-zinc-600">{card.owner_name || <span className="text-zinc-400">{t('cards.noOwner')}</span>}</td>
                     <td className="px-4 py-3 font-medium">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span></td>
                     <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 border border-green-100' : 'bg-gradient-to-br from-red-50 to-rose-50 text-red-700 border border-red-100'}`}>
                         {t(`common.${card.status as 'active' | 'frozen'}`)}
                       </span>
                     </td>
@@ -397,10 +397,10 @@ export default function CardsPage() {
           {/* Mobile stacked cards */}
           <div className="sm:hidden space-y-3">
             {filtered.map(card => (
-              <div key={card.id} className="bg-white rounded-xl border border-zinc-200 p-4">
+              <div key={card.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
                 <div className="flex items-start justify-between mb-2">
                   <span className="font-mono text-xs">{card.card_number}</span>
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 border border-green-100' : 'bg-gradient-to-br from-red-50 to-rose-50 text-red-700 border border-red-100'}`}>
                     {t(`common.${card.status as 'active' | 'frozen'}`)}
                   </span>
                 </div>
