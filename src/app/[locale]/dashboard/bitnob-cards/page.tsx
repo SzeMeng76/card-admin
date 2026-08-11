@@ -19,6 +19,14 @@ interface BitnobCard {
   owner_name: string | null
   failure_reason?: string
   created_at: string
+  billing_address?: {
+    line1?: string
+    line2?: string
+    city?: string
+    state?: string
+    postal_code?: string
+    country?: string
+  }
 }
 
 interface CardSecureDetails {
@@ -417,6 +425,21 @@ export default function BitnobCardsPage() {
                   <p className="text-xs text-zinc-500 mb-1">{t('cards.cardholder')}</p>
                   <p className="text-sm">{secureDetails.name}</p>
                 </div>
+                {detailsModal.billing_address && (
+                  <div>
+                    <p className="text-xs text-zinc-500 mb-1">{t('cards.billingAddress')}</p>
+                    <p className="text-sm text-zinc-700">
+                      {[
+                        detailsModal.billing_address.line1,
+                        detailsModal.billing_address.line2,
+                        detailsModal.billing_address.city,
+                        detailsModal.billing_address.state,
+                        detailsModal.billing_address.postal_code,
+                        detailsModal.billing_address.country,
+                      ].filter(Boolean).join(', ')}
+                    </p>
+                  </div>
+                )}
                 {!showSensitive && (
                   <div className="rounded-lg bg-amber-50 border border-amber-100 text-amber-700 text-xs px-3 py-2">
                     {t('bitnobCards.sensitiveWarning')}
