@@ -58,6 +58,7 @@ const ISSUE_FORM_DEFAULT = {
   firstName: '', lastName: '', email: '', phoneNumber: '', dialCode: '',
   dateOfBirth: '', idType: 'passport', idNumber: '',
   line1: '', city: '', state: '', postalCode: '', country: '',
+  contactlessPayment: true,
 }
 
 export default function BitnobCardsPage() {
@@ -127,6 +128,7 @@ export default function BitnobCardsPage() {
           amount: Number(issueForm.amount),
           currency: 'USD',
           ownerId: issueForm.ownerId ? Number(issueForm.ownerId) : null,
+          contactlessPayment: issueForm.contactlessPayment,
           customer: {
             customer_type: issueForm.customerType,
             first_name: issueForm.firstName,
@@ -276,6 +278,16 @@ export default function BitnobCardsPage() {
               <div className="space-y-1">
                 <Label>{t('cards.fundingAmount')}</Label>
                 <Input type="number" min="1" step="0.01" value={issueForm.amount} onChange={e => setIssueForm(f => ({ ...f, amount: e.target.value }))} required />
+              </div>
+              <div className="flex items-center gap-2 py-2">
+                <input
+                  type="checkbox"
+                  id="contactlessPayment"
+                  checked={issueForm.contactlessPayment}
+                  onChange={e => setIssueForm(f => ({ ...f, contactlessPayment: e.target.checked }))}
+                  className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
+                />
+                <Label htmlFor="contactlessPayment" className="cursor-pointer font-normal">Enable Contactless Payment (NFC/Tap-to-pay)</Label>
               </div>
               <div className="pt-2 border-t border-zinc-100" />
               <div className="grid grid-cols-2 gap-3">
