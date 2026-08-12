@@ -81,6 +81,7 @@
     "issuing": "Issuing...",
     "cardType": "Card Type",
     "fundingAmount": "Funding Amount (USD)",
+    "contactlessPayment": "Enable Contactless Payment (NFC/Tap-to-pay)",
     "customerType": "Customer Type",
     "individual": "Individual",
     "business": "Business",

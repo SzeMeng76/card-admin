@@ -287,7 +287,7 @@ export default function BitnobCardsPage() {
                   onChange={e => setIssueForm(f => ({ ...f, contactlessPayment: e.target.checked }))}
                   className="h-4 w-4 rounded border-zinc-300 text-blue-600 focus:ring-blue-500"
                 />
-                <Label htmlFor="contactlessPayment" className="cursor-pointer font-normal">Enable Contactless Payment (NFC/Tap-to-pay)</Label>
+                <Label htmlFor="contactlessPayment" className="cursor-pointer font-normal">{t('cards.contactlessPayment')}</Label>
               </div>
               <div className="pt-2 border-t border-zinc-100" />
               <div className="grid grid-cols-2 gap-3">

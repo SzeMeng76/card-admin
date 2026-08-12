@@ -81,6 +81,7 @@
     "issuing": "开卡中...",
     "cardType": "卡片类型",
     "fundingAmount": "初始充值金额 (USD)",
+  "contactlessPayment": "开启非接触支付 (NFC/闪付)",
     "customerType": "客户类型",
     "individual": "个人",
     "business": "企业",
