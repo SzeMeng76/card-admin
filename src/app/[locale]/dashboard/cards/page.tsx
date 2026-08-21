@@ -200,7 +200,7 @@ export default function CardsPage() {
           onChange={e => setFilterTelegramId(e.target.value)}
         >
           <option value="">所有 Telegram 用户</option>
-          {Array.from(new Set(users.filter(u => u.telegram_id).map(u => u.telegram_id))).map(tgId => (
+          {Array.from(new Set(users.filter(u => u.telegram_id).map(u => u.telegram_id!))).map(tgId => (
             <option key={tgId} value={tgId}>{tgId}</option>
           ))}
         </select>
