@@ -25,6 +25,7 @@ interface Card {
 interface User {
   id: number
   username: string
+  telegram_id?: number | null
 }
 
 export default function CardsPage() {
@@ -33,6 +34,7 @@ export default function CardsPage() {
   const [users, setUsers] = useState<User[]>([])
   const [search, setSearch] = useState('')
   const [filterOwnerId, setFilterOwnerId] = useState('')
+  const [filterTelegramId, setFilterTelegramId] = useState('')
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editModal, setEditModal] = useState<Card | null>(null)
@@ -160,7 +162,11 @@ export default function CardsPage() {
       (c.owner_name || '').toLowerCase().includes(term)
     const matchesOwner = !filterOwnerId ||
       (filterOwnerId === 'none' ? c.owner_id === null : String(c.owner_id) === filterOwnerId)
-    return matchesSearch && matchesOwner
+    const matchesTelegram = !filterTelegramId || (() => {
+      const user = users.find(u => u.id === c.owner_id)
+      return user && user.telegram_id && String(user.telegram_id) === filterTelegramId
+    })()
+    return matchesSearch && matchesOwner && matchesTelegram
   })
 
   return (
@@ -186,6 +192,16 @@ export default function CardsPage() {
           <option value="none">{t('cards.noOwner')}</option>
           {users.filter(u => (u as any).role !== 'admin').map(u => (
             <option key={u.id} value={u.id}>{u.username}</option>
+          ))}
+        </select>
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={filterTelegramId}
+          onChange={e => setFilterTelegramId(e.target.value)}
+        >
+          <option value="">所有 Telegram 用户</option>
+          {Array.from(new Set(users.filter(u => u.telegram_id).map(u => u.telegram_id))).map(tgId => (
+            <option key={tgId} value={tgId}>{tgId}</option>
           ))}
         </select>
       </div>

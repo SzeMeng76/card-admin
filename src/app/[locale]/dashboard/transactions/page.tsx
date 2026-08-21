@@ -16,29 +16,42 @@ interface Transaction {
   note: string
   created_by_name: string
   created_at: string
+  owner_name?: string
 }
 
 interface Card {
   id: number
   card_number: string
+  owner_name?: string
+}
+
+interface User {
+  id: number
+  username: string
 }
 
 export default function TransactionsPage() {
   const t = useTranslations()
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [cards, setCards] = useState<Card[]>([])
+  const [users, setUsers] = useState<User[]>([])
+  const [filterCardId, setFilterCardId] = useState('')
+  const [filterUserId, setFilterUserId] = useState('')
+  const [filterType, setFilterType] = useState('')
   const [showAdd, setShowAdd] = useState(false)
   const [editModal, setEditModal] = useState<Transaction | null>(null)
   const [form, setForm] = useState({ cardId: '', type: 'manual', amount: '', note: '', createdAt: '' })
   const [editForm, setEditForm] = useState({ type: 'manual', amount: '', note: '' })
 
   async function load() {
-    const [tx, c] = await Promise.all([
+    const [tx, c, u] = await Promise.all([
       fetch('/api/transactions').then(r => r.json()),
       fetch('/api/cards').then(r => r.json()),
+      fetch('/api/users').then(r => r.json()),
     ])
     setTransactions(tx)
     setCards(c)
+    setUsers(u)
   }
 
   useEffect(() => { load() }, [])
@@ -99,7 +112,7 @@ export default function TransactionsPage() {
 
   function exportCsv() {
     const headers = [t('transactions.cardNumber'), t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt')]
-    const rows = transactions.map(tx => [
+    const rows = filtered.map(tx => [
       tx.card_number, tx.type, tx.amount, tx.balance_after, tx.note || '', tx.created_by_name || '', tx.created_at
     ])
     const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
@@ -126,6 +139,16 @@ export default function TransactionsPage() {
     return map[type] || type
   }
 
+  const filtered = transactions.filter(tx => {
+    const matchesCard = !filterCardId || cards.find(c => c.card_number === tx.card_number && String(c.id) === filterCardId)
+    const matchesUser = !filterUserId || (() => {
+      const card = cards.find(c => c.card_number === tx.card_number)
+      return card && card.owner_name === users.find(u => String(u.id) === filterUserId)?.username
+    })()
+    const matchesType = !filterType || tx.type === filterType
+    return matchesCard && matchesUser && matchesType
+  })
+
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -134,6 +157,39 @@ export default function TransactionsPage() {
           <Button onClick={() => setShowAdd(true)} className="flex-1 sm:flex-none">{t('transactions.addRecord')}</Button>
           <Button variant="outline" onClick={exportCsv} className="flex-1 sm:flex-none">{t('common.export')}</Button>
         </div>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center flex-wrap">
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={filterCardId}
+          onChange={e => setFilterCardId(e.target.value)}
+        >
+          <option value="">所有卡片</option>
+          {cards.map(c => (
+            <option key={c.id} value={c.id}>{c.card_number}</option>
+          ))}
+        </select>
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={filterUserId}
+          onChange={e => setFilterUserId(e.target.value)}
+        >
+          <option value="">所有用户</option>
+          {users.filter(u => (u as any).role !== 'admin').map(u => (
+            <option key={u.id} value={u.id}>{u.username}</option>
+          ))}
+        </select>
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={filterType}
+          onChange={e => setFilterType(e.target.value)}
+        >
+          <option value="">所有类型</option>
+          <option value="topup">{t('transactions.topup')}</option>
+          <option value="deduct">{t('transactions.deduct')}</option>
+          <option value="manual">{t('transactions.manual')}</option>
+        </select>
       </div>
 
       {/* Add Transaction Modal */}
@@ -237,7 +293,7 @@ export default function TransactionsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {transactions.map(tx => (
+            {filtered.map(tx => (
               <tr key={tx.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-mono text-xs">{tx.card_number}</td>
                 <td className="px-4 py-3">
@@ -267,10 +323,10 @@ export default function TransactionsPage() {
 
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
-        {transactions.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">—</div>
         ) : (
-          transactions.map(tx => (
+          filtered.map(tx => (
             <div key={tx.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
               <div className="flex items-start justify-between mb-2">
                 <span className="font-mono text-xs">{tx.card_number}</span>
