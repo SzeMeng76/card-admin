@@ -384,7 +384,10 @@ export default function CardsPage() {
                 {filtered.map(card => (
                   <tr key={card.id} className="hover:bg-zinc-50">
                     <td className="px-4 py-3 font-mono text-xs">{card.card_number}</td>
-                    <td className="px-4 py-3 text-zinc-600">{card.owner_name || <span className="text-zinc-400">{t('cards.noOwner')}</span>}</td>
+                    <td className="px-4 py-3 text-zinc-600">
+                      {card.owner_name || <span className="text-zinc-400">{t('cards.noOwner')}</span>}
+                      {card.owner_telegram_id && <span className="ml-2 text-xs text-blue-600">(TG: {card.owner_telegram_id})</span>}
+                    </td>
                     <td className="px-4 py-3 font-medium">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span></td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 border border-green-100' : 'bg-gradient-to-br from-red-50 to-rose-50 text-red-700 border border-red-100'}`}>
@@ -424,7 +427,10 @@ export default function CardsPage() {
                   {cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
-                  <div>{t('cards.owner')}: <span className="text-zinc-700">{card.owner_name || t('cards.noOwner')}</span></div>
+                  <div>
+                    {t('cards.owner')}: <span className="text-zinc-700">{card.owner_name || t('cards.noOwner')}</span>
+                    {card.owner_telegram_id && <span className="ml-1 text-blue-600">(TG: {card.owner_telegram_id})</span>}
+                  </div>
                   <div>{t('cards.expiresAt')}: <span className="text-zinc-700">{card.expires_at ? (() => { const p = card.expires_at!.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })() : '—'}</span></div>
                   {card.billing_address && <div className="col-span-2 truncate">{t('cards.billingAddress')}: <span className="text-zinc-700">{card.billing_address}</span></div>}
                   {card.note && <div className="col-span-2">{t('common.note')}: <span className="text-zinc-700">{card.note}</span></div>}
