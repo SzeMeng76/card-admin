@@ -160,7 +160,8 @@ export default function CardsPage() {
     const term = search.trim().toLowerCase()
     const matchesSearch = !term ||
       c.card_number.toLowerCase().includes(term) ||
-      (c.owner_name || '').toLowerCase().includes(term)
+      (c.owner_name || '').toLowerCase().includes(term) ||
+      (c.owner_telegram_id && c.owner_telegram_id.toString().includes(term))
     const matchesOwner = !filterOwnerId ||
       (filterOwnerId === 'none' ? c.owner_id === null : String(c.owner_id) === filterOwnerId)
     const matchesTelegram = !filterTelegramId ||

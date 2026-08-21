@@ -22,6 +22,7 @@ export default function UsersPage() {
   const [tgId, setTgId] = useState('')
   const [form, setForm] = useState({ username: '', password: '', role: 'user' })
   const [newPassword, setNewPassword] = useState('')
+  const [search, setSearch] = useState('')
 
   async function load() {
     const data = await fetch('/api/users').then(r => r.json())
@@ -77,11 +78,29 @@ export default function UsersPage() {
     load()
   }
 
+  const filteredUsers = users.filter(user => {
+    if (!search) return true
+    const searchLower = search.toLowerCase()
+    return (
+      user.username.toLowerCase().includes(searchLower) ||
+      (user.telegram_id && user.telegram_id.toString().includes(search))
+    )
+  })
+
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
         <h1 className="text-2xl font-bold text-zinc-900">{t('users.title')}</h1>
         <Button onClick={() => setShowAdd(true)} className="w-full sm:w-auto">{t('users.addUser')}</Button>
+      </div>
+
+      <div className="mb-4">
+        <Input
+          placeholder="搜索用户名或 Telegram ID..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+          className="max-w-md"
+        />
       </div>
 
       {showAdd && (
@@ -169,7 +188,7 @@ export default function UsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-zinc-100">
-            {users.map(user => (
+            {filteredUsers.map(user => (
               <tr key={user.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-medium">{user.username}</td>
                 <td className="px-4 py-3">
@@ -198,7 +217,7 @@ export default function UsersPage() {
 
       {/* Mobile cards */}
       <div className="sm:hidden space-y-3">
-        {users.map(user => (
+        {filteredUsers.map(user => (
           <div key={user.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
             <div className="flex items-start justify-between mb-2">
               <div className="font-medium">{user.username}</div>
