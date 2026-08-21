@@ -17,6 +17,7 @@ interface Transaction {
   created_by_name: string
   created_at: string
   owner_name?: string
+  owner_telegram_id?: number | null
 }
 
 interface Card {
@@ -153,7 +154,9 @@ export default function TransactionsPage() {
     const matchesSearch = !term ||
       tx.card_number.toLowerCase().includes(term) ||
       (tx.note || '').toLowerCase().includes(term) ||
-      (tx.created_by_name || '').toLowerCase().includes(term)
+      (tx.created_by_name || '').toLowerCase().includes(term) ||
+      (tx.owner_name || '').toLowerCase().includes(term) ||
+      (tx.owner_telegram_id && tx.owner_telegram_id.toString().includes(term))
     const matchesCard = !filterCardId || cards.find(c => c.card_number === tx.card_number && String(c.id) === filterCardId)
     const matchesUser = !filterUserId || (() => {
       const card = cards.find(c => c.card_number === tx.card_number)
@@ -175,7 +178,7 @@ export default function TransactionsPage() {
 
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center flex-wrap">
         <Input
-          placeholder="搜索卡号、备注、操作者..."
+          placeholder="搜索卡号、owner、备注、操作者、Telegram ID..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="w-full sm:max-w-xs"
@@ -310,7 +313,7 @@ export default function TransactionsPage() {
         <table className="w-full text-sm">
           <thead className="bg-zinc-50 border-b border-zinc-200">
             <tr>
-              {[t('transactions.cardNumber'), t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt'), t('common.actions')].map(h => (
+              {[t('transactions.cardNumber'), 'Owner', t('transactions.type'), t('transactions.amount'), t('transactions.balanceAfter'), t('common.note'), t('transactions.operator'), t('common.createdAt'), t('common.actions')].map(h => (
                 <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
               ))}
             </tr>
@@ -319,6 +322,10 @@ export default function TransactionsPage() {
             {filtered.map(tx => (
               <tr key={tx.id} className="hover:bg-zinc-50">
                 <td className="px-4 py-3 font-mono text-xs">{tx.card_number}</td>
+                <td className="px-4 py-3 text-zinc-600 text-xs">
+                  {tx.owner_name || <span className="text-zinc-400">—</span>}
+                  {tx.owner_telegram_id && <span className="ml-1 text-blue-600">(TG: {tx.owner_telegram_id})</span>}
+                </td>
                 <td className="px-4 py-3">
                   <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[tx.type] || 'bg-zinc-100 text-zinc-600'}`}>
                     {typeLabel(tx.type)}
@@ -363,6 +370,12 @@ export default function TransactionsPage() {
               <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
                 <div>{t('transactions.balanceAfter')}: <span className="text-zinc-700">{cs(tx.currency)}{Number(tx.balance_after).toFixed(2)}</span></div>
                 <div className="text-right">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleDateString()}</div>
+                {tx.owner_name && (
+                  <div className="col-span-2">
+                    Owner: <span className="text-zinc-700">{tx.owner_name}</span>
+                    {tx.owner_telegram_id && <span className="ml-1 text-blue-600">(TG: {tx.owner_telegram_id})</span>}
+                  </div>
+                )}
                 {tx.note && <div className="col-span-2">{t('common.note')}: <span className="text-zinc-700">{tx.note}</span></div>}
                 {tx.created_by_name && <div className="col-span-2">{t('transactions.operator')}: <span className="text-zinc-700">{tx.created_by_name}</span></div>}
               </div>

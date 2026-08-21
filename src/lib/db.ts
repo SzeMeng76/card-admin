@@ -161,11 +161,41 @@ export const db = {
   },
   transactions: {
     list: (limit = 100) =>
-      getDb().prepare(`SELECT t.*, c.card_number, c.currency, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id ORDER BY t.created_at DESC LIMIT ?`).all(limit) as any[],
+      getDb().prepare(`
+        SELECT t.*, c.card_number, c.currency,
+               u1.username as created_by_name,
+               u2.username as owner_name,
+               u2.telegram_id as owner_telegram_id
+        FROM transactions t
+        LEFT JOIN cards c ON t.card_id = c.id
+        LEFT JOIN users u1 ON t.created_by = u1.id
+        LEFT JOIN users u2 ON c.owner_id = u2.id
+        ORDER BY t.created_at DESC LIMIT ?
+      `).all(limit) as any[],
     listByCard: (cardId: number) =>
-      getDb().prepare(`SELECT t.*, c.card_number, c.currency, u.username as created_by_name FROM transactions t LEFT JOIN cards c ON t.card_id = c.id LEFT JOIN users u ON t.created_by = u.id WHERE t.card_id = ? ORDER BY t.created_at DESC`).all(cardId) as any[],
+      getDb().prepare(`
+        SELECT t.*, c.card_number, c.currency,
+               u1.username as created_by_name,
+               u2.username as owner_name,
+               u2.telegram_id as owner_telegram_id
+        FROM transactions t
+        LEFT JOIN cards c ON t.card_id = c.id
+        LEFT JOIN users u1 ON t.created_by = u1.id
+        LEFT JOIN users u2 ON c.owner_id = u2.id
+        WHERE t.card_id = ?
+        ORDER BY t.created_at DESC
+      `).all(cardId) as any[],
     listByOwner: (ownerId: number) =>
-      getDb().prepare(`SELECT t.*, c.card_number, c.currency FROM transactions t JOIN cards c ON t.card_id = c.id WHERE c.owner_id = ? ORDER BY t.created_at DESC`).all(ownerId) as any[],
+      getDb().prepare(`
+        SELECT t.*, c.card_number, c.currency,
+               u.username as owner_name,
+               u.telegram_id as owner_telegram_id
+        FROM transactions t
+        JOIN cards c ON t.card_id = c.id
+        JOIN users u ON c.owner_id = u.id
+        WHERE c.owner_id = ?
+        ORDER BY t.created_at DESC
+      `).all(ownerId) as any[],
     create: (cardId: number, type: string, amount: number, balanceAfter: number, note: string, createdBy: number, createdAt?: string | null) =>
       getDb().prepare('INSERT INTO transactions (card_id, type, amount, balance_after, note, created_by, created_at) VALUES (?, ?, ?, ?, ?, ?, COALESCE(?, CURRENT_TIMESTAMP))').run(cardId, type, amount, balanceAfter, note, createdBy, createdAt ?? null),
     update: (id: number, type: string, amount: number, balanceAfter: number, note: string) =>
