@@ -11,6 +11,7 @@ interface Card {
   card_number: string
   owner_id: number | null
   owner_name: string | null
+  owner_telegram_id?: number | null
   balance: number
   status: string
   note: string
@@ -162,10 +163,8 @@ export default function CardsPage() {
       (c.owner_name || '').toLowerCase().includes(term)
     const matchesOwner = !filterOwnerId ||
       (filterOwnerId === 'none' ? c.owner_id === null : String(c.owner_id) === filterOwnerId)
-    const matchesTelegram = !filterTelegramId || (() => {
-      const user = users.find(u => u.id === c.owner_id)
-      return user && user.telegram_id && String(user.telegram_id) === filterTelegramId
-    })()
+    const matchesTelegram = !filterTelegramId ||
+      (c.owner_telegram_id && String(c.owner_telegram_id) === filterTelegramId)
     return matchesSearch && matchesOwner && matchesTelegram
   })
 
@@ -200,7 +199,7 @@ export default function CardsPage() {
           onChange={e => setFilterTelegramId(e.target.value)}
         >
           <option value="">所有 Telegram 用户</option>
-          {Array.from(new Set(users.filter(u => u.telegram_id).map(u => u.telegram_id!))).map(tgId => (
+          {Array.from(new Set(cards.filter(c => c.owner_telegram_id).map(c => c.owner_telegram_id!))).map(tgId => (
             <option key={tgId} value={tgId}>{tgId}</option>
           ))}
         </select>

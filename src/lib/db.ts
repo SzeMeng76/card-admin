@@ -126,9 +126,9 @@ export const db = {
   },
   cards: {
     list: () =>
-      getDb().prepare(`SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id ORDER BY c.created_at DESC`).all() as any[],
+      getDb().prepare(`SELECT c.*, u.username as owner_name, u.telegram_id as owner_telegram_id FROM cards c LEFT JOIN users u ON c.owner_id = u.id ORDER BY c.created_at DESC`).all() as any[],
     listByOwner: (ownerId: number) =>
-      getDb().prepare(`SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.owner_id = ? ORDER BY c.created_at DESC`).all(ownerId) as any[],
+      getDb().prepare(`SELECT c.*, u.username as owner_name, u.telegram_id as owner_telegram_id FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.owner_id = ? ORDER BY c.created_at DESC`).all(ownerId) as any[],
     findById: (id: number) =>
       getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.id = ?').get(id) as any,
     create: (cardNumber: string, ownerId: number | null, balance: number, note: string, expiresAt: string | null, cvc: string | null, cardholder: string | null, currency: string, billingAddress: string | null = null, provider = 'manual', providerCardId: string | null = null) =>
