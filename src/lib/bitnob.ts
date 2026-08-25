@@ -41,6 +41,42 @@ export interface BitnobCardCustomer {
   country: string
 }
 
+export interface BitnobCustomer {
+  id: string
+  company_id: string
+  customer_type: 'individual' | 'business'
+  first_name: string
+  last_name: string
+  email: string
+  phone_number: string
+  dial_code: string
+  date_of_birth: string
+  id_type: string
+  id_number: string
+  line1: string
+  city: string
+  state: string
+  postal_code: string
+  country: string
+  is_active: boolean
+  kyc_status: string
+  created_by: string
+  created_at: string
+  updated_at: string
+}
+
+export async function getCustomers(): Promise<BitnobCustomer[]> {
+  const res = await fetch(`${BASE_URL}/api/customers`, {
+    method: 'GET',
+    headers: authHeaders(null),
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok || !json?.success) {
+    throw new BitnobApiError(json?.message || json?.detail || `Bitnob API error (${res.status})`, res.status)
+  }
+  return json.data.customers as BitnobCustomer[]
+}
+
 export interface CreateCardParams {
   amount: number
   card_type: 'virtual' | 'physical'

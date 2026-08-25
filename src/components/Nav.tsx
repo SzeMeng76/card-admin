@@ -31,6 +31,7 @@ export default function Nav({ role, username }: NavProps) {
     { href: `/${locale}/dashboard`, label: t('nav.dashboard') },
     { href: `/${locale}/dashboard/cards`, label: t('nav.cards') },
     { href: `/${locale}/dashboard/bitnob-cards`, label: t('nav.bitnobCards') },
+    { href: `/${locale}/dashboard/bitnob-customers`, label: t('nav.bitnobCustomers') },
     { href: `/${locale}/dashboard/wallet`, label: t('nav.wallet') },
     { href: `/${locale}/dashboard/users`, label: t('nav.users') },
     { href: `/${locale}/dashboard/transactions`, label: t('nav.transactions') },

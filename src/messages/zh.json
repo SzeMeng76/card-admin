@@ -38,6 +38,7 @@
     "dashboard": "控制台",
     "cards": "卡片管理",
     "bitnobCards": "Bitnob 卡片",
+    "bitnobCustomers": "Bitnob 客户",
     "wallet": "钱包",
     "users": "用户管理",
     "transactions": "交易记录",
@@ -178,6 +179,16 @@
     "showDetails": "查看完整资料",
     "hideDetails": "隐藏",
     "sensitiveWarning": "点击查看完整卡号、CVV 和有效期。请勿截图或泄露。"
+  },
+  "bitnobCustomers": {
+    "title": "Bitnob 客户",
+    "searchPlaceholder": "搜索姓名、邮箱或客户ID",
+    "loadFailed": "加载客户列表失败",
+    "name": "姓名",
+    "idInfo": "证件类型/国家",
+    "kycStatus": "KYC 状态",
+    "kycUnknown": "未验证",
+    "issueForCustomer": "为该客户发卡"
   },
   "portal": {
     "title": "我的卡片",

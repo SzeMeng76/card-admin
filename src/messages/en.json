@@ -38,6 +38,7 @@
     "dashboard": "Dashboard",
     "cards": "Cards",
     "bitnobCards": "Bitnob Cards",
+    "bitnobCustomers": "Bitnob Customers",
     "wallet": "Wallet",
     "users": "Users",
     "transactions": "Transactions",
@@ -178,6 +179,16 @@
     "showDetails": "Reveal Details",
     "hideDetails": "Hide",
     "sensitiveWarning": "Click Reveal to show full card number, CVV and expiry. Do not share or screenshot."
+  },
+  "bitnobCustomers": {
+    "title": "Bitnob Customers",
+    "searchPlaceholder": "Search name, email, or customer ID",
+    "loadFailed": "Failed to load customers",
+    "name": "Name",
+    "idInfo": "ID Type / Country",
+    "kycStatus": "KYC Status",
+    "kycUnknown": "Not Verified",
+    "issueForCustomer": "Issue Card"
   },
   "portal": {
     "title": "My Cards",
