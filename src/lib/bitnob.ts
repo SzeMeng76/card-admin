@@ -32,7 +32,7 @@ export interface BitnobCardCustomer {
   phone_number: string
   dial_code: string
   date_of_birth: string
-  id_type: 'national_id' | 'passport' | 'drivers_license'
+  id_type: 'passport' | 'nin' | 'bvn' | 'national_id' | 'vnin' | 'drivers_license' | 'voters_card' | 'ghana_card'
   id_number: string
   line1: string
   city: string
@@ -49,7 +49,43 @@ export interface CreateCardParams {
   reference?: string
   contactless_payment?: boolean
   card_brand?: string
+  customer_id: string
+}
+
+export interface CardKycParams {
   customer: BitnobCardCustomer
+  occupation: string
+  employment_status: 'employed' | 'self_employed' | 'unemployed' | 'retired' | 'student'
+  account_purpose: string
+  annual_salary: string
+  expected_monthly_volume: string
+  place_of_birth?: string
+  terms_of_service_accepted: true
+  webhook_url?: string
+  id_front_image?: string
+}
+
+export interface CardKycResult {
+  customer_id: string
+  status: string
+  normalized_status: 'initiated' | 'pending' | 'approved' | 'rejected'
+  completion_link: string
+  email: string
+  first_name: string
+  last_name: string
+}
+
+export async function submitCardKyc(params: CardKycParams): Promise<CardKycResult> {
+  const res = await fetch(`${BASE_URL}/api/cards/kyc`, {
+    method: 'POST',
+    headers: authHeaders(params),
+    body: JSON.stringify(params),
+  })
+  const json = await res.json().catch(() => null)
+  if (!res.ok || !json?.success) {
+    throw new BitnobApiError(json?.message || json?.detail || `Bitnob API error (${res.status})`, res.status)
+  }
+  return json.data as CardKycResult
 }
 
 export interface BitnobCard {

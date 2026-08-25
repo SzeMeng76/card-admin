@@ -59,6 +59,20 @@ const ISSUE_FORM_DEFAULT = {
   dateOfBirth: '', idType: 'passport', idNumber: '',
   line1: '', city: '', state: '', postalCode: '', country: '',
   contactlessPayment: true,
+  occupation: '', employmentStatus: 'employed', accountPurpose: '',
+  annualSalary: '', expectedMonthlyVolume: '', placeOfBirth: '',
+  idFrontImage: '',
+}
+
+const ID_TYPES_NO_IMAGE = new Set(['bvn', 'nin'])
+
+function fileToDataUri(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as string)
+    reader.onerror = reject
+    reader.readAsDataURL(file)
+  })
 }
 
 export default function BitnobCardsPage() {
@@ -145,11 +159,24 @@ export default function BitnobCardsPage() {
             postal_code: issueForm.postalCode,
             country: issueForm.country,
           },
+          occupation: issueForm.occupation,
+          employmentStatus: issueForm.employmentStatus,
+          accountPurpose: issueForm.accountPurpose,
+          annualSalary: issueForm.annualSalary,
+          expectedMonthlyVolume: issueForm.expectedMonthlyVolume,
+          placeOfBirth: issueForm.placeOfBirth || undefined,
+          idFrontImage: ID_TYPES_NO_IMAGE.has(issueForm.idType) ? undefined : (issueForm.idFrontImage || undefined),
         }),
       })
       if (!res.ok) {
         const d = await res.json().catch(() => ({}))
-        setIssueError(d.error || t('cards.issueFailed'))
+        if (d.kyc_status === 'pending') {
+          setIssueError(t('cards.kycPending'))
+        } else if (d.kyc_status === 'rejected') {
+          setIssueError(t('cards.kycRejected'))
+        } else {
+          setIssueError(d.error || t('cards.issueFailed'))
+        }
         return
       }
       setShowIssue(false)
@@ -304,6 +331,11 @@ export default function BitnobCardsPage() {
                     <option value="passport">{t('cards.passport')}</option>
                     <option value="national_id">{t('cards.nationalId')}</option>
                     <option value="drivers_license">{t('cards.driversLicense')}</option>
+                    <option value="bvn">{t('cards.bvn')}</option>
+                    <option value="nin">{t('cards.nin')}</option>
+                    <option value="vnin">{t('cards.vnin')}</option>
+                    <option value="voters_card">{t('cards.votersCard')}</option>
+                    <option value="ghana_card">{t('cards.ghanaCard')}</option>
                   </select>
                 </div>
               </div>
@@ -318,6 +350,23 @@ export default function BitnobCardsPage() {
               </div>
               <div className="space-y-1"><Label>{t('cards.dateOfBirth')}</Label><Input type="date" value={issueForm.dateOfBirth} onChange={e => setIssueForm(f => ({ ...f, dateOfBirth: e.target.value }))} required /></div>
               <div className="space-y-1"><Label>{t('cards.idNumber')}</Label><Input value={issueForm.idNumber} onChange={e => setIssueForm(f => ({ ...f, idNumber: e.target.value }))} required /></div>
+              {!ID_TYPES_NO_IMAGE.has(issueForm.idType) && (
+                <div className="space-y-1">
+                  <Label>{t('cards.idFrontImage')}</Label>
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/png"
+                    className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm file:mr-2 file:rounded file:border-0 file:bg-zinc-100 file:px-2 file:py-1"
+                    onChange={async e => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      const dataUri = await fileToDataUri(file)
+                      setIssueForm(f => ({ ...f, idFrontImage: dataUri }))
+                    }}
+                    required
+                  />
+                </div>
+              )}
               <div className="space-y-1"><Label>{t('cards.addressLine1')}</Label><Input value={issueForm.line1} onChange={e => setIssueForm(f => ({ ...f, line1: e.target.value }))} required /></div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1"><Label>{t('cards.city')}</Label><Input value={issueForm.city} onChange={e => setIssueForm(f => ({ ...f, city: e.target.value }))} required /></div>
@@ -327,6 +376,26 @@ export default function BitnobCardsPage() {
                 <div className="space-y-1"><Label>{t('cards.postalCode')}</Label><Input value={issueForm.postalCode} onChange={e => setIssueForm(f => ({ ...f, postalCode: e.target.value }))} required /></div>
                 <div className="space-y-1"><Label>{t('cards.country')}</Label><Input placeholder="MYS" maxLength={3} value={issueForm.country} onChange={e => setIssueForm(f => ({ ...f, country: e.target.value.toUpperCase() }))} required /></div>
               </div>
+              <div className="pt-2 border-t border-zinc-100" />
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label>{t('cards.occupation')}</Label><Input value={issueForm.occupation} onChange={e => setIssueForm(f => ({ ...f, occupation: e.target.value }))} required /></div>
+                <div className="space-y-1">
+                  <Label>{t('cards.employmentStatus')}</Label>
+                  <select className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm" value={issueForm.employmentStatus} onChange={e => setIssueForm(f => ({ ...f, employmentStatus: e.target.value }))}>
+                    <option value="employed">{t('cards.employed')}</option>
+                    <option value="self_employed">{t('cards.selfEmployed')}</option>
+                    <option value="unemployed">{t('cards.unemployed')}</option>
+                    <option value="retired">{t('cards.retired')}</option>
+                    <option value="student">{t('cards.student')}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="space-y-1"><Label>{t('cards.accountPurpose')}</Label><Input value={issueForm.accountPurpose} onChange={e => setIssueForm(f => ({ ...f, accountPurpose: e.target.value }))} required /></div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1"><Label>{t('cards.annualSalary')}</Label><Input type="number" min="0" value={issueForm.annualSalary} onChange={e => setIssueForm(f => ({ ...f, annualSalary: e.target.value }))} required /></div>
+                <div className="space-y-1"><Label>{t('cards.expectedMonthlyVolume')}</Label><Input type="number" min="0" value={issueForm.expectedMonthlyVolume} onChange={e => setIssueForm(f => ({ ...f, expectedMonthlyVolume: e.target.value }))} required /></div>
+              </div>
+              <div className="space-y-1"><Label>{t('cards.placeOfBirth')}</Label><Input value={issueForm.placeOfBirth} onChange={e => setIssueForm(f => ({ ...f, placeOfBirth: e.target.value }))} /></div>
               <div className="flex gap-2 pt-2">
                 <Button type="submit" disabled={issuing}>{issuing ? t('cards.issuing') : t('cards.issueCard')}</Button>
                 <Button type="button" variant="outline" onClick={() => { setShowIssue(false); setIssueError('') }}>{t('common.cancel')}</Button>
