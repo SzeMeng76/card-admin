@@ -349,7 +349,7 @@ export default function BitnobCardsPage() {
                   <Label>{t('cards.idFrontImage')}</Label>
                   <input
                     type="file"
-                    accept="image/jpeg,image/png"
+                    accept="image/jpeg,image/png,image/webp"
                     className="flex h-10 w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm file:mr-2 file:rounded file:border-0 file:bg-zinc-100 file:px-2 file:py-1"
                     onChange={async e => {
                       const file = e.target.files?.[0]
