@@ -43,6 +43,14 @@ const ADD_CUSTOMER_FORM_DEFAULT = {
 
 const ID_TYPES_NO_IMAGE = new Set(['bvn', 'nin'])
 
+const KYC_STATUS_LABEL_KEYS: Record<string, string> = {
+  none: 'bitnobCustomers.kycNone',
+  initiated: 'bitnobCustomers.kycInitiated',
+  pending: 'bitnobCustomers.kycPending',
+  approved: 'bitnobCustomers.kycApproved',
+  rejected: 'bitnobCustomers.kycRejected',
+}
+
 function fileToDataUri(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
@@ -180,6 +188,11 @@ export default function BitnobCustomersPage() {
     } finally {
       setAddingCustomer(false)
     }
+  }
+
+  function kycStatusLabel(status: string) {
+    const key = KYC_STATUS_LABEL_KEYS[status]
+    return key ? t(key) : (status || t('bitnobCustomers.kycUnknown'))
   }
 
   const filtered = customers.filter(c => {
@@ -370,7 +383,7 @@ export default function BitnobCustomersPage() {
                     <td className="px-4 py-3 text-zinc-500 text-xs uppercase">{customer.id_type} · {customer.country}</td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${customer.kyc_status === 'approved' ? 'bg-green-50 text-green-700 border-green-100' : customer.kyc_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-zinc-50 text-zinc-500 border-zinc-100'}`}>
-                        {customer.kyc_status || t('bitnobCustomers.kycUnknown')}
+                        {kycStatusLabel(customer.kyc_status)}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -396,7 +409,7 @@ export default function BitnobCustomersPage() {
                     <p className="text-xs text-zinc-500 mt-0.5">{customer.email}</p>
                   </div>
                   <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${customer.kyc_status === 'approved' ? 'bg-green-50 text-green-700 border-green-100' : customer.kyc_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-zinc-50 text-zinc-500 border-zinc-100'}`}>
-                    {customer.kyc_status || t('bitnobCustomers.kycUnknown')}
+                    {kycStatusLabel(customer.kyc_status)}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 mb-3">
