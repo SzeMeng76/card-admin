@@ -27,7 +27,10 @@
     "newPassword": "新密码",
     "confirmPassword": "确认新密码",
     "passwordMismatch": "两次密码不一致",
-    "wrongPassword": "当前密码错误"
+    "wrongPassword": "当前密码错误",
+    "previous": "上一页",
+    "next": "下一页",
+    "total": "总计"
   },
   "login": {
     "title": "SM ONE CARD MANAGER",
@@ -186,6 +189,7 @@
     "title": "Bitnob 客户",
     "searchPlaceholder": "搜索姓名、邮箱或客户ID",
     "loadFailed": "加载客户列表失败",
+    "customerId": "客户ID",
     "name": "姓名",
     "idInfo": "证件类型/国家",
     "kycStatus": "KYC 状态",

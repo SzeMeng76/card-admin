@@ -59,6 +59,12 @@ export default function BitnobCustomersPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
+  const [hasNextPage, setHasNextPage] = useState(false)
+  const [hasPrevPage, setHasPrevPage] = useState(false)
+  const [nextCursor, setNextCursor] = useState<string>('')
+  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined)
+  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [totalCount, setTotalCount] = useState(0)
 
   const [issueTarget, setIssueTarget] = useState<BitnobCustomer | null>(null)
   const [issuing, setIssuing] = useState(false)
@@ -71,12 +77,16 @@ export default function BitnobCustomersPage() {
   const [addCustomerForm, setAddCustomerForm] = useState(ADD_CUSTOMER_FORM_DEFAULT)
   const [compressingImage, setCompressingImage] = useState(false)
 
-  async function load() {
+  async function load(cursor?: string, isPrevious = false) {
     setLoading(true)
     setError('')
     try {
+      const qs = new URLSearchParams()
+      if (cursor) qs.set('cursor', cursor)
+      qs.set('limit', '50')
+
       const [customersRes, usersRes] = await Promise.all([
-        fetch('/api/bitnob/customers'),
+        fetch(`/api/bitnob/customers?${qs.toString()}`),
         fetch('/api/users'),
       ])
       if (!customersRes.ok) {
@@ -86,12 +96,34 @@ export default function BitnobCustomersPage() {
       }
       const data = await customersRes.json()
       setCustomers(data.customers)
+      setNextCursor(data.next_cursor || '')
+      setHasNextPage(data.has_more || false)
+      setHasPrevPage(!!data.prev_cursor)
+      setTotalCount(data.total || 0)
+      setCurrentCursor(cursor)
+
+      if (!isPrevious && cursor) {
+        setCursorHistory(prev => [...prev, cursor])
+      }
+
       setUsers(await usersRes.json())
     } catch {
       setError(t('bitnobCustomers.loadFailed'))
     } finally {
       setLoading(false)
     }
+  }
+
+  function nextPage() {
+    if (!hasNextPage || !nextCursor) return
+    load(nextCursor, false)
+  }
+
+  function prevPage() {
+    if (!hasPrevPage || cursorHistory.length === 0) return
+    const prevCursor = cursorHistory[cursorHistory.length - 2]
+    setCursorHistory(prev => prev.slice(0, -1))
+    load(prevCursor, true)
   }
 
   useEffect(() => { load() }, [])
@@ -369,7 +401,7 @@ export default function BitnobCustomersPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 border-b border-zinc-200">
                 <tr>
-                  {[t('bitnobCustomers.name'), t('cards.email'), t('bitnobCustomers.idInfo'), t('bitnobCustomers.kycStatus'), t('bitnobCustomers.activeStatus'), t('common.createdAt'), t('common.actions')].map(h => (
+                  {[t('bitnobCustomers.customerId'), t('bitnobCustomers.name'), t('cards.email'), t('bitnobCustomers.idInfo'), t('bitnobCustomers.kycStatus'), t('bitnobCustomers.activeStatus'), t('common.createdAt'), t('common.actions')].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -377,6 +409,7 @@ export default function BitnobCustomersPage() {
               <tbody className="divide-y divide-zinc-100">
                 {filtered.map(customer => (
                   <tr key={customer.id} className="hover:bg-zinc-50">
+                    <td className="px-4 py-3 text-zinc-500 text-xs font-mono">{customer.id}</td>
                     <td className="px-4 py-3 text-zinc-700 text-xs">{customer.first_name} {customer.last_name}</td>
                     <td className="px-4 py-3 text-zinc-500 text-xs">{customer.email}</td>
                     <td className="px-4 py-3 text-zinc-500 text-xs uppercase">{customer.id_type} · {customer.country}</td>
@@ -404,6 +437,7 @@ export default function BitnobCustomersPage() {
               <div key={customer.id} className="bg-white rounded-2xl shadow-md p-5">
                 <div className="flex items-start justify-between mb-2">
                   <div>
+                    <p className="text-xs text-zinc-400 font-mono mb-1">{customer.id}</p>
                     <p className="text-sm font-medium">{customer.first_name} {customer.last_name}</p>
                     <p className="text-xs text-zinc-500 mt-0.5">{customer.email}</p>
                   </div>
@@ -420,6 +454,31 @@ export default function BitnobCustomersPage() {
                 <Button size="sm" variant="outline" onClick={() => openIssue(customer)}>{t('bitnobCustomers.issueForCustomer')}</Button>
               </div>
             ))}
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-4 px-2">
+            <div className="text-sm text-zinc-500">
+              {t('common.total')}: {totalCount}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={prevPage}
+                disabled={!hasPrevPage || loading}
+              >
+                {t('common.previous')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={nextPage}
+                disabled={!hasNextPage || loading}
+              >
+                {t('common.next')}
+              </Button>
+            </div>
           </div>
         </>
       )}

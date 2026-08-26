@@ -65,8 +65,27 @@ export interface BitnobCustomer {
   updated_at: string
 }
 
-export async function getCustomers(): Promise<BitnobCustomer[]> {
-  const res = await fetch(`${BASE_URL}/api/customers`, {
+export interface ListCustomersParams {
+  cursor?: string
+  limit?: number
+}
+
+export interface CustomersPage {
+  customers: BitnobCustomer[]
+  has_more: boolean
+  next_cursor: string
+  prev_cursor: string
+  page_size: number
+  total: number
+}
+
+export async function getCustomers(params: ListCustomersParams = {}): Promise<CustomersPage> {
+  const qs = new URLSearchParams()
+  if (params.cursor) qs.set('cursor', params.cursor)
+  if (params.limit) qs.set('limit', String(params.limit))
+  const query = qs.toString()
+
+  const res = await fetch(`${BASE_URL}/api/customers${query ? `?${query}` : ''}`, {
     method: 'GET',
     headers: authHeaders(null),
   })
@@ -74,7 +93,7 @@ export async function getCustomers(): Promise<BitnobCustomer[]> {
   if (!res.ok || !json?.success) {
     throw new BitnobApiError(json?.message || json?.detail || `Bitnob API error (${res.status})`, res.status)
   }
-  return json.data.customers as BitnobCustomer[]
+  return json.data as CustomersPage
 }
 
 export interface CreateCardParams {

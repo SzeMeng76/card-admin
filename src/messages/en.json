@@ -27,7 +27,10 @@
     "newPassword": "New Password",
     "confirmPassword": "Confirm New Password",
     "passwordMismatch": "Passwords do not match",
-    "wrongPassword": "Current password is incorrect"
+    "wrongPassword": "Current password is incorrect",
+    "previous": "Previous",
+    "next": "Next",
+    "total": "Total"
   },
   "login": {
     "title": "SM ONE CARD MANAGER",
@@ -186,6 +189,7 @@
     "title": "Bitnob Customers",
     "searchPlaceholder": "Search name, email, or customer ID",
     "loadFailed": "Failed to load customers",
+    "customerId": "Customer ID",
     "name": "Name",
     "idInfo": "ID Type / Country",
     "kycStatus": "KYC Status",
