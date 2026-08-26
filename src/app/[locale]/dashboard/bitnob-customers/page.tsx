@@ -60,7 +60,7 @@ export default function BitnobCustomersPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
-  const [totalCount, setTotalCount] = useState(0)
+  const [hasMore, setHasMore] = useState(false)
   const pageSize = 50
 
   const [issueTarget, setIssueTarget] = useState<BitnobCustomer | null>(null)
@@ -95,7 +95,7 @@ export default function BitnobCustomersPage() {
       const data = await customersRes.json()
       setCustomers(data.customers)
       setCurrentPage(page)
-      setTotalCount(data.total || 0)
+      setHasMore(data.has_more || false)
 
       setUsers(await usersRes.json())
     } catch {
@@ -106,8 +106,7 @@ export default function BitnobCustomersPage() {
   }
 
   function nextPage() {
-    const totalPages = Math.ceil(totalCount / pageSize)
-    if (currentPage >= totalPages) return
+    if (!hasMore) return
     load(currentPage + 1)
   }
 
@@ -449,10 +448,8 @@ export default function BitnobCustomersPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4 px-2">
             <div className="text-sm text-zinc-500">
-              {t('common.total')}: {totalCount}
-              <span className="ml-2">
-                (第 {currentPage}/{Math.ceil(totalCount / pageSize)} 页)
-              </span>
+              第 {currentPage} 页 · 当前 {customers.length} 条
+              {hasMore && <span className="ml-2 text-orange-600">(有更多数据)</span>}
             </div>
             <div className="flex gap-2">
               <Button
@@ -467,7 +464,7 @@ export default function BitnobCustomersPage() {
                 variant="outline"
                 size="sm"
                 onClick={nextPage}
-                disabled={currentPage >= Math.ceil(totalCount / pageSize) || loading}
+                disabled={!hasMore || loading}
               >
                 {t('common.next')}
               </Button>
