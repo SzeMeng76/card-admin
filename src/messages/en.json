@@ -104,6 +104,7 @@
     "votersCard": "Voter's Card",
     "ghanaCard": "Ghana Card",
     "idFrontImage": "ID Front Photo (JPEG/PNG, max 3MB)",
+    "compressingImage": "Compressing image...",
     "addressLine1": "Address Line 1",
     "city": "City",
     "state": "State/Province",

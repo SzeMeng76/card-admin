@@ -104,6 +104,7 @@
     "votersCard": "选民证",
     "ghanaCard": "加纳身份证",
     "idFrontImage": "证件正面照片（JPEG/PNG，最大3MB）",
+    "compressingImage": "正在压缩图片...",
     "addressLine1": "地址",
     "city": "城市",
     "state": "省/州",

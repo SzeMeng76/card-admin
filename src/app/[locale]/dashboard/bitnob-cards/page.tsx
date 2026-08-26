@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
+import { compressImageToBase64 } from '@/lib/image'
 
 interface BitnobCard {
   id: string
@@ -66,15 +67,6 @@ const ISSUE_FORM_DEFAULT = {
 
 const ID_TYPES_NO_IMAGE = new Set(['bvn', 'nin'])
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve((reader.result as string).split(',')[1] || '')
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
 export default function BitnobCardsPage() {
   const t = useTranslations()
   const [cards, setCards] = useState<BitnobCard[]>([])
@@ -86,6 +78,7 @@ export default function BitnobCardsPage() {
   const [issuing, setIssuing] = useState(false)
   const [issueError, setIssueError] = useState('')
   const [issueForm, setIssueForm] = useState(ISSUE_FORM_DEFAULT)
+  const [compressingImage, setCompressingImage] = useState(false)
 
   const [fundModal, setFundModal] = useState<BitnobCard | null>(null)
   const [fundAction, setFundAction] = useState<'fund' | 'withdraw'>('fund')
@@ -361,11 +354,17 @@ export default function BitnobCardsPage() {
                     onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
-                      const dataUri = await fileToBase64(file)
-                      setIssueForm(f => ({ ...f, idFrontImage: dataUri }))
+                      setCompressingImage(true)
+                      try {
+                        const base64 = await compressImageToBase64(file)
+                        setIssueForm(f => ({ ...f, idFrontImage: base64 }))
+                      } finally {
+                        setCompressingImage(false)
+                      }
                     }}
                     required
                   />
+                  {compressingImage && <p className="text-xs text-zinc-400">{t('cards.compressingImage')}</p>}
                 </div>
               )}
               <div className="space-y-1"><Label>{t('cards.addressLine1')}</Label><Input value={issueForm.line1} onChange={e => setIssueForm(f => ({ ...f, line1: e.target.value }))} required /></div>
@@ -398,7 +397,7 @@ export default function BitnobCardsPage() {
               </div>
               <div className="space-y-1"><Label>{t('cards.placeOfBirth')}</Label><Input value={issueForm.placeOfBirth} onChange={e => setIssueForm(f => ({ ...f, placeOfBirth: e.target.value }))} /></div>
               <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={issuing}>{issuing ? t('cards.issuing') : t('cards.issueCard')}</Button>
+                <Button type="submit" disabled={issuing || compressingImage}>{issuing ? t('cards.issuing') : t('cards.issueCard')}</Button>
                 <Button type="button" variant="outline" onClick={() => { setShowIssue(false); setIssueError('') }}>{t('common.cancel')}</Button>
               </div>
             </form>

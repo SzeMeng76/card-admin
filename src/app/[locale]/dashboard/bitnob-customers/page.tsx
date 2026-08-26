@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
+import { compressImageToBase64 } from '@/lib/image'
 
 interface BitnobCustomer {
   id: string
@@ -51,15 +52,6 @@ const KYC_STATUS_LABEL_KEYS: Record<string, string> = {
   rejected: 'bitnobCustomers.kycRejected',
 }
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve((reader.result as string).split(',')[1] || '')
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
 export default function BitnobCustomersPage() {
   const t = useTranslations()
   const [customers, setCustomers] = useState<BitnobCustomer[]>([])
@@ -77,6 +69,7 @@ export default function BitnobCustomersPage() {
   const [addingCustomer, setAddingCustomer] = useState(false)
   const [addCustomerError, setAddCustomerError] = useState('')
   const [addCustomerForm, setAddCustomerForm] = useState(ADD_CUSTOMER_FORM_DEFAULT)
+  const [compressingImage, setCompressingImage] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -315,11 +308,17 @@ export default function BitnobCustomersPage() {
                     onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
-                      const dataUri = await fileToBase64(file)
-                      setAddCustomerForm(f => ({ ...f, idFrontImage: dataUri }))
+                      setCompressingImage(true)
+                      try {
+                        const base64 = await compressImageToBase64(file)
+                        setAddCustomerForm(f => ({ ...f, idFrontImage: base64 }))
+                      } finally {
+                        setCompressingImage(false)
+                      }
                     }}
                     required
                   />
+                  {compressingImage && <p className="text-xs text-zinc-400">{t('cards.compressingImage')}</p>}
                 </div>
               )}
               <div className="space-y-1"><Label>{t('cards.addressLine1')}</Label><Input value={addCustomerForm.line1} onChange={e => setAddCustomerForm(f => ({ ...f, line1: e.target.value }))} required /></div>
@@ -352,7 +351,7 @@ export default function BitnobCustomersPage() {
               </div>
               <div className="space-y-1"><Label>{t('cards.placeOfBirth')}</Label><Input value={addCustomerForm.placeOfBirth} onChange={e => setAddCustomerForm(f => ({ ...f, placeOfBirth: e.target.value }))} /></div>
               <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={addingCustomer}>{addingCustomer ? t('bitnobCustomers.adding') : t('bitnobCustomers.addCustomer')}</Button>
+                <Button type="submit" disabled={addingCustomer || compressingImage}>{addingCustomer ? t('bitnobCustomers.adding') : t('bitnobCustomers.addCustomer')}</Button>
                 <Button type="button" variant="outline" onClick={() => { setShowAddCustomer(false); setAddCustomerError('') }}>{t('common.cancel')}</Button>
               </div>
             </form>
