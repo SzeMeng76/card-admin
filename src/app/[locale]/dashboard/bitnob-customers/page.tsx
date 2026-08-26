@@ -51,10 +51,10 @@ const KYC_STATUS_LABEL_KEYS: Record<string, string> = {
   rejected: 'bitnobCustomers.kycRejected',
 }
 
-function fileToDataUri(file: File): Promise<string> {
+function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
+    reader.onload = () => resolve((reader.result as string).split(',')[1] || '')
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
@@ -315,7 +315,7 @@ export default function BitnobCustomersPage() {
                     onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
-                      const dataUri = await fileToDataUri(file)
+                      const dataUri = await fileToBase64(file)
                       setAddCustomerForm(f => ({ ...f, idFrontImage: dataUri }))
                     }}
                     required

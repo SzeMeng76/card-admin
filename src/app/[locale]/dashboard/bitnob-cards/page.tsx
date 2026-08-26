@@ -66,10 +66,10 @@ const ISSUE_FORM_DEFAULT = {
 
 const ID_TYPES_NO_IMAGE = new Set(['bvn', 'nin'])
 
-function fileToDataUri(file: File): Promise<string> {
+function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
+    reader.onload = () => resolve((reader.result as string).split(',')[1] || '')
     reader.onerror = reject
     reader.readAsDataURL(file)
   })
@@ -361,7 +361,7 @@ export default function BitnobCardsPage() {
                     onChange={async e => {
                       const file = e.target.files?.[0]
                       if (!file) return
-                      const dataUri = await fileToDataUri(file)
+                      const dataUri = await fileToBase64(file)
                       setIssueForm(f => ({ ...f, idFrontImage: dataUri }))
                     }}
                     required
