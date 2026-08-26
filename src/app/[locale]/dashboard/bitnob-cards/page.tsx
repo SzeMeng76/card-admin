@@ -304,7 +304,8 @@ export default function BitnobCardsPage() {
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.fundingAmount')}</Label>
-                <Input type="number" min="1" step="0.01" value={issueForm.amount} onChange={e => setIssueForm(f => ({ ...f, amount: e.target.value }))} required />
+                <Input type="number" min="3" max="2500" step="0.01" value={issueForm.amount} onChange={e => setIssueForm(f => ({ ...f, amount: e.target.value }))} required />
+                <p className="text-xs text-zinc-400">{t('cards.fundingAmountHint')}</p>
               </div>
               <div className="flex items-center gap-2 py-2">
                 <input

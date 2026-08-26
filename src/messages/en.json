@@ -82,6 +82,7 @@
     "issuing": "Issuing...",
     "cardType": "Card Type",
     "fundingAmount": "Funding Amount (USD)",
+    "fundingAmountHint": "Minimum $3, maximum $2,500",
     "contactlessPayment": "Enable Contactless Payment (NFC/Tap-to-pay)",
     "customerType": "Customer Type",
     "individual": "Individual",
@@ -190,7 +191,9 @@
     "kycUnknown": "Not Verified",
     "activeStatus": "Account Status",
     "inactive": "Inactive",
-    "issueForCustomer": "Issue Card"
+    "issueForCustomer": "Issue Card",
+    "addCustomer": "Add Customer (Submit KYC)",
+    "addFailed": "Failed to add customer"
   },
   "portal": {
     "title": "My Cards",

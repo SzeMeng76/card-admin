@@ -82,6 +82,7 @@
     "issuing": "开卡中...",
     "cardType": "卡片类型",
     "fundingAmount": "初始充值金额 (USD)",
+    "fundingAmountHint": "最低 $3，最高 $2,500",
   "contactlessPayment": "开启非接触支付 (NFC/闪付)",
     "customerType": "客户类型",
     "individual": "个人",
@@ -190,7 +191,9 @@
     "kycUnknown": "未验证",
     "activeStatus": "账户状态",
     "inactive": "未激活",
-    "issueForCustomer": "为该客户发卡"
+    "issueForCustomer": "为该客户发卡",
+    "addCustomer": "添加客户 (提交KYC)",
+    "addFailed": "添加客户失败"
   },
   "portal": {
     "title": "我的卡片",

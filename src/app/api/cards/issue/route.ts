@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
   if (!name || !amount || !currency) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
   }
+  if (Number(amount) < 3 || Number(amount) > 2500) {
+    return NextResponse.json({ error: 'Funding amount must be between $3 and $2,500' }, { status: 400 })
+  }
   if (!customerId && !customer) {
     return NextResponse.json({ error: 'Missing customer or customerId' }, { status: 400 })
   }
