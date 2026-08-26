@@ -193,6 +193,7 @@
     "inactive": "未激活",
     "issueForCustomer": "为该客户发卡",
     "addCustomer": "添加客户 (提交KYC)",
+    "adding": "提交中...",
     "addFailed": "添加客户失败"
   },
   "portal": {

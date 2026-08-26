@@ -339,7 +339,7 @@ export default function BitnobCustomersPage() {
               </div>
               <div className="space-y-1"><Label>{t('cards.placeOfBirth')}</Label><Input value={addCustomerForm.placeOfBirth} onChange={e => setAddCustomerForm(f => ({ ...f, placeOfBirth: e.target.value }))} /></div>
               <div className="flex gap-2 pt-2">
-                <Button type="submit" disabled={addingCustomer}>{addingCustomer ? t('cards.issuing') : t('bitnobCustomers.addCustomer')}</Button>
+                <Button type="submit" disabled={addingCustomer}>{addingCustomer ? t('bitnobCustomers.adding') : t('bitnobCustomers.addCustomer')}</Button>
                 <Button type="button" variant="outline" onClick={() => { setShowAddCustomer(false); setAddCustomerError('') }}>{t('common.cancel')}</Button>
               </div>
             </form>

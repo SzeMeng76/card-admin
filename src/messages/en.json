@@ -193,6 +193,7 @@
     "inactive": "Inactive",
     "issueForCustomer": "Issue Card",
     "addCustomer": "Add Customer (Submit KYC)",
+    "adding": "Submitting...",
     "addFailed": "Failed to add customer"
   },
   "portal": {
