@@ -188,6 +188,8 @@
     "idInfo": "证件类型/国家",
     "kycStatus": "KYC 状态",
     "kycUnknown": "未验证",
+    "activeStatus": "账户状态",
+    "inactive": "未激活",
     "issueForCustomer": "为该客户发卡"
   },
   "portal": {

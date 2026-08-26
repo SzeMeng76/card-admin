@@ -188,6 +188,8 @@
     "idInfo": "ID Type / Country",
     "kycStatus": "KYC Status",
     "kycUnknown": "Not Verified",
+    "activeStatus": "Account Status",
+    "inactive": "Inactive",
     "issueForCustomer": "Issue Card"
   },
   "portal": {

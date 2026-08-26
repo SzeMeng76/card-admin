@@ -183,7 +183,7 @@ export default function BitnobCustomersPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 border-b border-zinc-200">
                 <tr>
-                  {[t('bitnobCustomers.name'), t('cards.email'), t('bitnobCustomers.idInfo'), t('bitnobCustomers.kycStatus'), t('common.createdAt'), t('common.actions')].map(h => (
+                  {[t('bitnobCustomers.name'), t('cards.email'), t('bitnobCustomers.idInfo'), t('bitnobCustomers.kycStatus'), t('bitnobCustomers.activeStatus'), t('common.createdAt'), t('common.actions')].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
@@ -197,6 +197,11 @@ export default function BitnobCustomersPage() {
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${customer.kyc_status === 'approved' ? 'bg-green-50 text-green-700 border-green-100' : customer.kyc_status === 'rejected' ? 'bg-red-50 text-red-700 border-red-100' : 'bg-zinc-50 text-zinc-500 border-zinc-100'}`}>
                         {customer.kyc_status || t('bitnobCustomers.kycUnknown')}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${customer.is_active ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                        {customer.is_active ? t('common.active') : t('bitnobCustomers.inactive')}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-zinc-400 text-xs whitespace-nowrap">{new Date(customer.created_at).toLocaleString()}</td>
@@ -220,7 +225,12 @@ export default function BitnobCustomersPage() {
                     {customer.kyc_status || t('bitnobCustomers.kycUnknown')}
                   </span>
                 </div>
-                <p className="text-xs text-zinc-500 mb-3 uppercase">{customer.id_type} · {customer.country}</p>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${customer.is_active ? 'bg-green-50 text-green-700 border-green-100' : 'bg-red-50 text-red-700 border-red-100'}`}>
+                    {customer.is_active ? t('common.active') : t('bitnobCustomers.inactive')}
+                  </span>
+                  <p className="text-xs text-zinc-500 uppercase">{customer.id_type} · {customer.country}</p>
+                </div>
                 <Button size="sm" variant="outline" onClick={() => openIssue(customer)}>{t('bitnobCustomers.issueForCustomer')}</Button>
               </div>
             ))}
