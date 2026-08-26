@@ -60,10 +60,8 @@ export default function BitnobCustomersPage() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
   const [hasNextPage, setHasNextPage] = useState(false)
-  const [hasPrevPage, setHasPrevPage] = useState(false)
   const [nextCursor, setNextCursor] = useState<string>('')
-  const [currentCursor, setCurrentCursor] = useState<string | undefined>(undefined)
-  const [cursorHistory, setCursorHistory] = useState<string[]>([])
+  const [prevCursor, setPrevCursor] = useState<string>('')
   const [totalCount, setTotalCount] = useState(0)
 
   const [issueTarget, setIssueTarget] = useState<BitnobCustomer | null>(null)
@@ -77,7 +75,7 @@ export default function BitnobCustomersPage() {
   const [addCustomerForm, setAddCustomerForm] = useState(ADD_CUSTOMER_FORM_DEFAULT)
   const [compressingImage, setCompressingImage] = useState(false)
 
-  async function load(cursor?: string, isPrevious = false) {
+  async function load(cursor?: string) {
     setLoading(true)
     setError('')
     try {
@@ -97,14 +95,9 @@ export default function BitnobCustomersPage() {
       const data = await customersRes.json()
       setCustomers(data.customers)
       setNextCursor(data.next_cursor || '')
+      setPrevCursor(data.prev_cursor || '')
       setHasNextPage(data.has_more || false)
-      setHasPrevPage(!!data.prev_cursor)
       setTotalCount(data.total || 0)
-      setCurrentCursor(cursor)
-
-      if (!isPrevious && cursor) {
-        setCursorHistory(prev => [...prev, cursor])
-      }
 
       setUsers(await usersRes.json())
     } catch {
@@ -116,14 +109,12 @@ export default function BitnobCustomersPage() {
 
   function nextPage() {
     if (!hasNextPage || !nextCursor) return
-    load(nextCursor, false)
+    load(nextCursor)
   }
 
   function prevPage() {
-    if (!hasPrevPage || cursorHistory.length === 0) return
-    const prevCursor = cursorHistory[cursorHistory.length - 2]
-    setCursorHistory(prev => prev.slice(0, -1))
-    load(prevCursor, true)
+    if (!prevCursor) return
+    load(prevCursor)
   }
 
   useEffect(() => { load() }, [])
@@ -459,14 +450,15 @@ export default function BitnobCustomersPage() {
           {/* Pagination */}
           <div className="flex items-center justify-between mt-4 px-2">
             <div className="text-sm text-zinc-500">
-              {t('common.total')}: {totalCount}
+              {t('common.total')}: {totalCount}{hasNextPage && '+'}
+              {hasNextPage && <span className="ml-2 text-xs text-orange-600">(有更多数据，请翻页查看)</span>}
             </div>
             <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={prevPage}
-                disabled={!hasPrevPage || loading}
+                disabled={!prevCursor || loading}
               >
                 {t('common.previous')}
               </Button>
