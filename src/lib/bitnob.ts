@@ -67,6 +67,7 @@ export interface BitnobCustomer {
 
 export interface ListCustomersParams {
   cursor?: string
+  offset?: number
   limit?: number
 }
 
@@ -81,7 +82,8 @@ export interface CustomersPage {
 
 export async function getCustomers(params: ListCustomersParams = {}): Promise<CustomersPage> {
   const qs = new URLSearchParams()
-  if (params.cursor) qs.set('cursor', params.cursor)
+  if (params.offset !== undefined) qs.set('offset', String(params.offset))
+  else if (params.cursor) qs.set('cursor', params.cursor)
   if (params.limit) qs.set('limit', String(params.limit))
   const query = qs.toString()
 

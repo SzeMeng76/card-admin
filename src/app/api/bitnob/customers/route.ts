@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const page = await getCustomers({
       cursor: searchParams.get('cursor') || undefined,
+      offset: searchParams.get('offset') ? Number(searchParams.get('offset')) : undefined,
       limit: searchParams.get('limit') ? Number(searchParams.get('limit')) : 100,
     })
     return NextResponse.json(page)
