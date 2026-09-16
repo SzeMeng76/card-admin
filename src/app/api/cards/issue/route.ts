@@ -90,7 +90,15 @@ export async function POST(request: NextRequest) {
     })
 
     const billing = card.billing_address || {}
-    const billingAddr = [billing.line1, billing.city, billing.state, billing.postal_code, billing.country].filter(Boolean).join(', ')
+    const billingAddr = JSON.stringify({
+      line1: billing.line1 || '',
+      line2: billing.line2 || '',
+      line3: billing.line3 || '',
+      city: billing.city || '',
+      state: billing.state || '',
+      postal_code: billing.postal_code || '',
+      country: billing.country || '',
+    })
     db.cards.create(
       card.masked_pan || `PENDING_${card.id}`,
       ownerId || null,

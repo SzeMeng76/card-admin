@@ -102,8 +102,27 @@ export default function CardDetailPage() {
 
         {card.billing_address && (
           <div className="relative border-t border-white/20 pt-4">
-            <p className="text-xs opacity-60 uppercase mb-1">{t('portal.billingAddress')}</p>
-            <p className="text-sm">{card.billing_address}</p>
+            <p className="text-xs opacity-60 uppercase mb-2">{t('portal.billingAddress')}</p>
+            <div className="text-sm space-y-1.5">
+              {(() => {
+                try {
+                  const addr = JSON.parse(card.billing_address)
+                  return (
+                    <>
+                      {addr.line1 && <p><span className="opacity-60">Street Address:</span> {addr.line1}</p>}
+                      {addr.line2 && <p><span className="opacity-60">Address Line 2:</span> {addr.line2}</p>}
+                      {addr.line3 && <p><span className="opacity-60">Address Line 3:</span> {addr.line3}</p>}
+                      {addr.city && <p><span className="opacity-60">City:</span> {addr.city}</p>}
+                      {addr.state && <p><span className="opacity-60">State:</span> {addr.state}</p>}
+                      {addr.postal_code && <p><span className="opacity-60">Postal Code:</span> {addr.postal_code}</p>}
+                      {addr.country && <p><span className="opacity-60">Country:</span> {addr.country}</p>}
+                    </>
+                  )
+                } catch {
+                  return <p className="text-sm">{card.billing_address}</p>
+                }
+              })()}
+            </div>
           </div>
         )}
       </div>

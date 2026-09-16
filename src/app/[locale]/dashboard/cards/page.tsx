@@ -42,8 +42,8 @@ export default function CardsPage() {
   const [balanceModal, setBalanceModal] = useState<Card | null>(null)
   const [balanceType, setBalanceType] = useState<'topup' | 'deduct'>('topup')
 
-  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: '' })
-  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD', billingAddress: '' })
+  const [form, setForm] = useState({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: { line1: '', line2: '', line3: '', city: '', state: '', postal_code: '', country: '' } })
+  const [editForm, setEditForm] = useState({ cvc: '', cardholder: '', expiresAt: '', note: '', ownerId: '', currency: 'USD', billingAddress: { line1: '', line2: '', line3: '', city: '', state: '', postal_code: '', country: '' } })
   const [balanceForm, setBalanceForm] = useState({ amount: '', note: '', createdAt: '' })
 
   async function load() {
@@ -64,6 +64,7 @@ export default function CardsPage() {
 
   async function addCard(e: React.FormEvent) {
     e.preventDefault()
+    const billingAddr = Object.values(form.billingAddress).some(v => v) ? JSON.stringify(form.billingAddress) : null
     await fetch('/api/cards', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -76,11 +77,11 @@ export default function CardsPage() {
         cvc: form.cvc || null,
         cardholder: form.cardholder || null,
         currency: form.currency,
-        billingAddress: form.billingAddress || null,
+        billingAddress: billingAddr,
       }),
     })
     setShowAdd(false)
-    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: '' })
+    setForm({ cardNumber: '', ownerId: '', balance: '0', note: '', expiresAt: '', cvc: '', cardholder: '', currency: 'USD', billingAddress: { line1: '', line2: '', line3: '', city: '', state: '', postal_code: '', country: '' } })
     load()
   }
 
@@ -94,6 +95,14 @@ export default function CardsPage() {
   }
 
   function openEdit(card: Card) {
+    let billingAddr = { line1: '', line2: '', line3: '', city: '', state: '', postal_code: '', country: '' }
+    if (card.billing_address) {
+      try {
+        billingAddr = JSON.parse(card.billing_address)
+      } catch {
+        // Legacy format - ignore
+      }
+    }
     setEditForm({
       cvc: card.cvc || '',
       cardholder: card.cardholder || '',
@@ -101,7 +110,7 @@ export default function CardsPage() {
       note: card.note || '',
       ownerId: card.owner_id ? String(card.owner_id) : '',
       currency: card.currency || 'USD',
-      billingAddress: card.billing_address || '',
+      billingAddress: billingAddr,
     })
     setEditModal(card)
   }
@@ -109,6 +118,7 @@ export default function CardsPage() {
   async function saveEdit(e: React.FormEvent) {
     e.preventDefault()
     if (!editModal) return
+    const billingAddr = Object.values(editForm.billingAddress).some(v => v) ? JSON.stringify(editForm.billingAddress) : null
     await fetch('/api/cards', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -120,7 +130,7 @@ export default function CardsPage() {
         note: editForm.note,
         ownerId: editForm.ownerId ? Number(editForm.ownerId) : null,
         currency: editForm.currency,
-        billingAddress: editForm.billingAddress || null,
+        billingAddress: billingAddr,
       }),
     })
     setEditModal(null)
@@ -251,7 +261,19 @@ export default function CardsPage() {
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.billingAddress')}</Label>
-                <Input value={form.billingAddress} onChange={e => setForm(f => ({ ...f, billingAddress: e.target.value }))} placeholder="e.g. 3401 N. Miami Ave. Ste 230, Miami FL 33127" />
+                <div className="space-y-2">
+                  <Input value={form.billingAddress.line1} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line1: e.target.value } }))} placeholder="Street Address (e.g. 3401 N. Miami Ave. Ste 230)" />
+                  <Input value={form.billingAddress.line2} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line2: e.target.value } }))} placeholder="Address Line 2 (optional)" />
+                  <Input value={form.billingAddress.line3} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line3: e.target.value } }))} placeholder="Address Line 3 (optional)" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input value={form.billingAddress.city} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, city: e.target.value } }))} placeholder="City (e.g. Miami)" />
+                    <Input value={form.billingAddress.state} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, state: e.target.value } }))} placeholder="State (e.g. Florida)" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input value={form.billingAddress.postal_code} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, postal_code: e.target.value } }))} placeholder="Postal Code (e.g. 33127)" />
+                    <Input value={form.billingAddress.country} onChange={e => setForm(f => ({ ...f, billingAddress: { ...f.billingAddress, country: e.target.value } }))} placeholder="Country (e.g. United States)" />
+                  </div>
+                </div>
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.currency')}</Label>
@@ -340,7 +362,19 @@ export default function CardsPage() {
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.billingAddress')}</Label>
-                <Input value={editForm.billingAddress} onChange={e => setEditForm(f => ({ ...f, billingAddress: e.target.value }))} placeholder="e.g. 3401 N. Miami Ave. Ste 230, Miami FL 33127" />
+                <div className="space-y-2">
+                  <Input value={editForm.billingAddress.line1} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line1: e.target.value } }))} placeholder="Street Address (e.g. 3401 N. Miami Ave. Ste 230)" />
+                  <Input value={editForm.billingAddress.line2} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line2: e.target.value } }))} placeholder="Address Line 2 (optional)" />
+                  <Input value={editForm.billingAddress.line3} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, line3: e.target.value } }))} placeholder="Address Line 3 (optional)" />
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input value={editForm.billingAddress.city} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, city: e.target.value } }))} placeholder="City (e.g. Miami)" />
+                    <Input value={editForm.billingAddress.state} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, state: e.target.value } }))} placeholder="State (e.g. Florida)" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input value={editForm.billingAddress.postal_code} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, postal_code: e.target.value } }))} placeholder="Postal Code (e.g. 33127)" />
+                    <Input value={editForm.billingAddress.country} onChange={e => setEditForm(f => ({ ...f, billingAddress: { ...f.billingAddress, country: e.target.value } }))} placeholder="Country (e.g. United States)" />
+                  </div>
+                </div>
               </div>
               <div className="space-y-1">
                 <Label>{t('cards.currency')}</Label>
