@@ -229,3 +229,8 @@ export function fmtAmountByCurrency(rows: { currency: string; total: number }[])
   if (!rows.length) return '0.00'
   return rows.map(r => `${CURRENCY_SYMBOL[r.currency] || r.currency}${Number(r.total).toFixed(2)}`).join(' / ')
 }
+
+// One line per currency, so multi-currency totals wrap onto separate rows instead of being truncated
+export function balanceLines(rows: { currency: string; total: number }[]): string[] {
+  return rows.map(r => `${CURRENCY_SYMBOL[r.currency] || r.currency}${Number(r.total).toFixed(2)}`)
+}
