@@ -1,7 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { CreditCard, Wallet, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
 import { cs } from '@/lib/currency'
@@ -36,6 +37,8 @@ export default function CardsPage() {
   const [search, setSearch] = useState('')
   const [filterOwnerId, setFilterOwnerId] = useState('')
   const [filterTelegramId, setFilterTelegramId] = useState('')
+  const [filterCurrency, setFilterCurrency] = useState('')
+  const [sortKey, setSortKey] = useState<'default' | 'balanceDesc' | 'balanceAsc'>('default')
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
   const [editModal, setEditModal] = useState<Card | null>(null)
@@ -166,7 +169,8 @@ export default function CardsPage() {
     load()
   }
 
-  const filtered = cards.filter(c => {
+  // Filters that drive the statistics strip (search / owner / telegram)
+  const searched = cards.filter(c => {
     const term = search.trim().toLowerCase()
     const matchesSearch = !term ||
       c.card_number.toLowerCase().includes(term) ||
@@ -179,6 +183,51 @@ export default function CardsPage() {
     return matchesSearch && matchesOwner && matchesTelegram
   })
 
+  // Per-currency balance statistics for active (normal) cards
+  const statsByCurrency = useMemo(() => {
+    const map = new Map<string, { currency: string; count: number; total: number; max: number }>()
+    for (const c of searched) {
+      if (c.status !== 'active') continue
+      const currency = c.currency || 'USD'
+      const entry = map.get(currency) || { currency, count: 0, total: 0, max: 0 }
+      const balance = Number(c.balance) || 0
+      entry.count += 1
+      entry.total += balance
+      entry.max = Math.max(entry.max, balance)
+      map.set(currency, entry)
+    }
+    return Array.from(map.values()).sort((a, b) => a.currency.localeCompare(b.currency))
+  }, [searched])
+
+  const totalActiveCards = statsByCurrency.reduce((sum, s) => sum + s.count, 0)
+
+  const filterCurrencies = useMemo(
+    () => Array.from(new Set(searched.map(c => c.currency || 'USD'))).sort(),
+    [searched],
+  )
+
+  // Sort within each currency group so balances of different currencies are never compared
+  const sorted = useMemo(() => {
+    const list = filterCurrency ? searched.filter(c => (c.currency || 'USD') === filterCurrency) : searched
+    if (sortKey === 'default') return list
+    const dir = sortKey === 'balanceDesc' ? -1 : 1
+    return [...list].sort((a, b) => {
+      const ca = a.currency || 'USD'
+      const cb = b.currency || 'USD'
+      if (ca !== cb) return ca.localeCompare(cb)
+      return dir * ((Number(a.balance) || 0) - (Number(b.balance) || 0))
+    })
+  }, [searched, filterCurrency, sortKey])
+
+  function toggleBalanceSort() {
+    setSortKey(k => (k === 'default' ? 'balanceDesc' : k === 'balanceDesc' ? 'balanceAsc' : 'default'))
+  }
+
+  const maxStat = statsByCurrency.reduce<{ currency: string; count: number; total: number; max: number } | null>(
+    (best, s) => (best && best.max >= s.max ? best : s),
+    null,
+  )
+
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -186,7 +235,75 @@ export default function CardsPage() {
         <Button onClick={() => setShowAdd(true)} className="w-full sm:w-auto">{t('cards.addCard')}</Button>
       </div>
 
-      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+      {/* Balance statistics — active (normal) cards only, grouped by currency */}
+      <div className="mb-4 grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="rounded-2xl border border-zinc-100 bg-white shadow-md p-5">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 bg-emerald-50">
+            <Wallet className="w-5 h-5 text-emerald-600" />
+          </div>
+          <p className="text-xs text-zinc-500 mb-1">{t('cards.activeBalanceCards')}</p>
+          <p className="text-2xl font-bold text-zinc-900">{totalActiveCards}</p>
+          <p className="text-xs text-zinc-400 truncate mt-0.5">{t('cards.activeCardsHint')}</p>
+        </div>
+        <div className="rounded-2xl border border-zinc-100 bg-white shadow-md p-5">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 bg-amber-50">
+            <CreditCard className="w-5 h-5 text-amber-600" />
+          </div>
+          <p className="text-xs text-zinc-500 mb-1">{t('cards.activeTotalBalance')}</p>
+          {statsByCurrency.length === 0 ? (
+            <p className="text-2xl font-bold text-zinc-900">—</p>
+          ) : (
+            <div className="space-y-1">
+              {statsByCurrency.map(s => (
+                <p key={s.currency} className="text-lg font-bold text-zinc-900 leading-tight">
+                  {cs(s.currency)}{s.total.toFixed(2)}
+                  <span className="text-xs text-zinc-400 font-normal ml-1">{s.currency}</span>
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="rounded-2xl border border-zinc-100 bg-white shadow-md p-5">
+          <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl mb-3 bg-violet-50">
+            <TrendingUp className="w-5 h-5 text-violet-600" />
+          </div>
+          <p className="text-xs text-zinc-500 mb-1">{t('cards.maxSingleBalance')}</p>
+          {statsByCurrency.length === 0 ? (
+            <p className="text-2xl font-bold text-zinc-900">—</p>
+          ) : (
+            <div className="space-y-1">
+              {statsByCurrency.map(s => (
+                <p key={s.currency} className="text-lg font-bold text-zinc-900 leading-tight">
+                  {cs(s.currency)}{s.max.toFixed(2)}
+                  <span className="text-xs text-zinc-400 font-normal ml-1">{s.currency}</span>
+                </p>
+              ))}
+            </div>
+          )}
+          {maxStat && (
+            <p className="text-xs text-zinc-400 truncate mt-1">
+              {t('cards.maxOverall')}: {cs(maxStat.currency)}{maxStat.max.toFixed(2)}
+            </p>
+          )}
+        </div>
+        <div className="rounded-2xl border border-zinc-100 bg-white shadow-md p-5">
+          <p className="text-xs text-zinc-500 mb-1">{t('cards.activeCardsByCurrency')}</p>
+          {statsByCurrency.length === 0 ? (
+            <p className="text-2xl font-bold text-zinc-900">—</p>
+          ) : (
+            <div className="space-y-1">
+              {statsByCurrency.map(s => (
+                <p key={s.currency} className="text-lg font-bold text-zinc-900 leading-tight">
+                  {s.count}
+                  <span className="text-xs text-zinc-400 font-normal ml-1">{t('cards.cardsUnit')} {s.currency}</span>
+                </p>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap">
         <Input
           placeholder={t('cards.searchPlaceholder')}
           value={search}
@@ -214,6 +331,28 @@ export default function CardsPage() {
             <option key={tgId} value={tgId}>{tgId}</option>
           ))}
         </select>
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={filterCurrency}
+          onChange={e => setFilterCurrency(e.target.value)}
+        >
+          <option value="">{t('cards.allCurrencies')}</option>
+          {filterCurrencies.map(cur => (
+            <option key={cur} value={cur}>{cur}</option>
+          ))}
+        </select>
+        <select
+          className="flex h-10 w-full sm:w-auto rounded-md border border-zinc-300 bg-white px-3 py-2 text-sm"
+          value={sortKey}
+          onChange={e => setSortKey(e.target.value as 'default' | 'balanceDesc' | 'balanceAsc')}
+        >
+          <option value="default">{t('cards.sortDefault')}</option>
+          <option value="balanceDesc">{t('cards.sortBalanceDesc')}</option>
+          <option value="balanceAsc">{t('cards.sortBalanceAsc')}</option>
+        </select>
+        {sortKey !== 'default' && (
+          <p className="text-xs text-zinc-400">{t('cards.differentCurrencyHint')}</p>
+        )}
       </div>
 
       {/* Add Card Modal */}
@@ -398,7 +537,7 @@ export default function CardsPage() {
         <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">
           {t('common.loading')}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="bg-white rounded-2xl shadow-md py-16 text-center text-zinc-400 text-sm">
           {t('cards.noResults')}
         </div>
@@ -409,13 +548,25 @@ export default function CardsPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-50 border-b border-zinc-200">
                 <tr>
-                  {[t('cards.cardNumber'), t('cards.owner'), t('cards.balance'), t('common.status'), t('cards.expiresAt'), t('cards.billingAddress'), t('common.note'), t('common.actions')].map(h => (
+                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{t('cards.cardNumber')}</th>
+                  <th className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{t('cards.owner')}</th>
+                  <th
+                    onClick={toggleBalanceSort}
+                    className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap cursor-pointer select-none hover:text-zinc-900"
+                    title={t('cards.sortByBalance')}
+                  >
+                    {t('cards.balance')}
+                    <span className="ml-1 text-zinc-400">
+                      {sortKey === 'balanceDesc' ? '▼' : sortKey === 'balanceAsc' ? '▲' : '↕'}
+                    </span>
+                  </th>
+                  {[t('common.status'), t('cards.expiresAt'), t('cards.billingAddress'), t('common.note'), t('common.actions')].map(h => (
                     <th key={h} className="text-left px-4 py-3 text-zinc-500 font-medium text-xs whitespace-nowrap">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-100">
-                {filtered.map(card => (
+                {sorted.map(card => (
                   <tr key={card.id} className="hover:bg-zinc-50">
                     <td className="px-4 py-3 font-mono text-xs">{card.card_number}</td>
                     <td className="px-4 py-3 text-zinc-600">
@@ -449,7 +600,7 @@ export default function CardsPage() {
 
           {/* Mobile stacked cards */}
           <div className="sm:hidden space-y-3">
-            {filtered.map(card => (
+            {sorted.map(card => (
               <div key={card.id} className="bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-200 p-5">
                 <div className="flex items-start justify-between mb-2">
                   <span className="font-mono text-xs">{card.card_number}</span>

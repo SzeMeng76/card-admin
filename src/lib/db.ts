@@ -144,7 +144,9 @@ export const db = {
     stats: () =>
       getDb().prepare('SELECT COUNT(*) as total, SUM(balance) as totalBalance, SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as active FROM cards').get('active') as any,
     balanceByCurrency: () =>
-      getDb().prepare('SELECT COALESCE(currency, \'USD\') as currency, SUM(balance) as total FROM cards GROUP BY currency').all() as { currency: string; total: number }[],
+      getDb().prepare('SELECT COALESCE(currency, \'USD\') as currency, SUM(balance) as total FROM cards WHERE status = \'active\' AND provider != \'bitnob\' GROUP BY currency').all() as { currency: string; total: number }[],
+    maxBalanceByCurrency: () =>
+      getDb().prepare('SELECT COALESCE(currency, \'USD\') as currency, MAX(balance) as max FROM cards WHERE status = \'active\' AND provider != \'bitnob\' GROUP BY currency').all() as { currency: string; max: number }[],
     findByProviderCardId: (providerCardId: string) =>
       getDb().prepare('SELECT c.*, u.username as owner_name FROM cards c LEFT JOIN users u ON c.owner_id = u.id WHERE c.provider_card_id = ?').get(providerCardId) as any,
     listByProvider: (provider: string) =>
