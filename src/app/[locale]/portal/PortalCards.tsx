@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useRouter, useParams } from 'next/navigation'
 import { Wifi } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { cs } from '@/lib/currency'
+import { cs, money } from '@/lib/currency'
 
 interface CardData {
   id: number
@@ -78,7 +78,7 @@ export default function PortalCards() {
                 <CardContent className="pt-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-zinc-500">{t('portal.balance')}</span>
-                    <span className="text-xl font-bold">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-sm font-normal text-zinc-400">{card.currency}</span></span>
+                    <span className="text-xl font-bold">{money(card.currency, card.balance)} <span className="text-sm font-normal text-zinc-400">{card.currency}</span></span>
                   </div>
                   {card.note && <p className="text-xs text-zinc-400 mt-1">{card.note}</p>}
                   <p className="text-xs text-zinc-300 mt-2 text-right">{t('portal.clickDetails')} →</p>

@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 import { Wifi, ArrowUpRight, ArrowDownRight, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { cs } from '@/lib/currency'
+import { cs, money } from '@/lib/currency'
 
 interface CardData {
   id: number
@@ -97,7 +97,7 @@ export default function CardDetailPage() {
 
         <div className="relative border-t border-white/20 pt-4">
           <p className="text-xs opacity-60 uppercase mb-1">{t('portal.balance')}</p>
-          <p className="text-3xl font-bold">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-base font-normal opacity-70">{card.currency}</span></p>
+          <p className="text-3xl font-bold">{money(card.currency, card.balance)} <span className="text-base font-normal opacity-70">{card.currency}</span></p>
         </div>
 
         {card.billing_address && (
@@ -156,9 +156,9 @@ export default function CardDetailPage() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-sm font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
-                    {isPositive ? '+' : ''}{cs(card.currency)}{Number(tx.amount).toFixed(2)}
+                    {money(card.currency, tx.amount, true)}
                   </p>
-                  <p className="text-xs text-zinc-400">{cs(card.currency)}{Number(tx.balance_after).toFixed(2)}</p>
+                  <p className="text-xs text-zinc-400">{money(card.currency, tx.balance_after)}</p>
                 </div>
               </div>
             )

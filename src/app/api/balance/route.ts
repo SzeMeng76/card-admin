@@ -17,7 +17,10 @@ export async function POST(request: NextRequest) {
   const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
   const newBalance = card.balance + delta
 
-  if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  // Bitnob 卡余额由远端 API 托管，不允许扣成负数；本地手动卡允许透支。
+  if (card.provider === 'bitnob' && newBalance < 0) {
+    return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  }
 
   if (card.provider === 'bitnob' && card.provider_card_id) {
     try {

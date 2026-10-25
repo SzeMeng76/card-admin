@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { CreditCard, Wallet, TrendingUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
-import { cs } from '@/lib/currency'
+import { cs, money } from '@/lib/currency'
 
 interface Card {
   id: number
@@ -256,7 +256,7 @@ export default function CardsPage() {
             <div className="space-y-1">
               {statsByCurrency.map(s => (
                 <p key={s.currency} className="text-lg font-bold text-zinc-900 leading-tight">
-                  {cs(s.currency)}{s.total.toFixed(2)}
+                  {money(s.currency, s.total)}
                   <span className="text-xs text-zinc-400 font-normal ml-1">{s.currency}</span>
                 </p>
               ))}
@@ -274,7 +274,7 @@ export default function CardsPage() {
             <div className="space-y-1">
               {statsByCurrency.map(s => (
                 <p key={s.currency} className="text-lg font-bold text-zinc-900 leading-tight">
-                  {cs(s.currency)}{s.max.toFixed(2)}
+                  {money(s.currency, s.max)}
                   <span className="text-xs text-zinc-400 font-normal ml-1">{s.currency}</span>
                 </p>
               ))}
@@ -282,7 +282,7 @@ export default function CardsPage() {
           )}
           {maxStat && (
             <p className="text-xs text-zinc-400 truncate mt-1">
-              {t('cards.maxOverall')}: {cs(maxStat.currency)}{maxStat.max.toFixed(2)}
+              {t('cards.maxOverall')}: {money(maxStat.currency, maxStat.max)}
             </p>
           )}
         </div>
@@ -437,7 +437,7 @@ export default function CardsPage() {
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4 overflow-y-auto">
           <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl my-8 max-h-[90vh] overflow-y-auto">
             <h2 className="font-semibold mb-1">{balanceModal.card_number}</h2>
-            <p className="text-sm text-zinc-500 mb-4">{t('cards.balance')}: {cs(balanceModal.currency)}{Number(balanceModal.balance).toFixed(2)}</p>
+            <p className="text-sm text-zinc-500 mb-4">{t('cards.balance')}: {money(balanceModal.currency, balanceModal.balance)}</p>
             <div className="flex gap-2 mb-4">
               <Button size="sm" variant={balanceType === 'topup' ? 'default' : 'outline'} onClick={() => setBalanceType('topup')}>{t('cards.topup')}</Button>
               <Button size="sm" variant={balanceType === 'deduct' ? 'destructive' : 'outline'} onClick={() => setBalanceType('deduct')}>{t('cards.deduct')}</Button>
@@ -573,7 +573,7 @@ export default function CardsPage() {
                       {card.owner_name || <span className="text-zinc-400">{t('cards.noOwner')}</span>}
                       {card.owner_telegram_id && <span className="ml-2 text-xs text-blue-600">(TG: {card.owner_telegram_id})</span>}
                     </td>
-                    <td className="px-4 py-3 font-medium">{cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span></td>
+                    <td className="px-4 py-3 font-medium">{money(card.currency, card.balance)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span></td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${card.status === 'active' ? 'bg-gradient-to-br from-green-50 to-emerald-50 text-green-700 border border-green-100' : 'bg-gradient-to-br from-red-50 to-rose-50 text-red-700 border border-red-100'}`}>
                         {t(`common.${card.status as 'active' | 'frozen'}`)}
@@ -609,7 +609,7 @@ export default function CardsPage() {
                   </span>
                 </div>
                 <div className="text-lg font-medium mb-2">
-                  {cs(card.currency)}{Number(card.balance).toFixed(2)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span>
+                  {money(card.currency, card.balance)} <span className="text-zinc-400 text-xs font-normal">{card.currency}</span>
                 </div>
                 <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
                   <div>

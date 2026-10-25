@@ -41,7 +41,10 @@ export async function POST(request: NextRequest) {
   const delta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
   const newBalance = card.balance + delta
 
-  if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  // Bitnob 卡余额由远端 API 托管，不允许扣成负数；本地手动卡允许透支。
+  if (card.provider === 'bitnob' && newBalance < 0) {
+    return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  }
 
   const createdAtUtc = createdAt ? new Date(createdAt + '+08:00').toISOString() : null
   db.cards.updateBalance(cardId, newBalance)
@@ -101,7 +104,9 @@ export async function PATCH(request: NextRequest) {
   const newDelta = type === 'deduct' ? -Math.abs(amount) : Math.abs(amount)
   const newBalance = card.balance - tx.amount + newDelta
 
-  if (newBalance < 0) return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  if (card.provider === 'bitnob' && newBalance < 0) {
+    return NextResponse.json({ error: 'Insufficient balance' }, { status: 400 })
+  }
 
   db.cards.updateBalance(tx.card_id, newBalance)
   db.transactions.update(id, type, newDelta, newBalance, note || '')
@@ -121,7 +126,8 @@ export async function DELETE(request: NextRequest) {
   if (card) {
     // Reverse the transaction's effect on balance
     const newBalance = card.balance - tx.amount
-    if (newBalance >= 0) db.cards.updateBalance(tx.card_id, newBalance)
+    // Bitnob 卡余额由远端 API 托管，不允许回滚成负数；本地手动卡允许透支。
+    if (card.provider !== 'bitnob' || newBalance >= 0) db.cards.updateBalance(tx.card_id, newBalance)
   }
 
   db.transactions.delete(id)

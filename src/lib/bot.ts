@@ -1,6 +1,6 @@
 import { Bot, webhookCallback, InlineKeyboard } from 'grammy'
 import { db, fmtAmountByCurrency } from './db'
-import { cs } from './currency'
+import { cs, money } from './currency'
 
 function userMenu() {
   return new InlineKeyboard()
@@ -77,7 +77,7 @@ function fmtCards(cards: any[]) {
   if (!cards.length) return '没有找到卡片。'
   return cards.map(c =>
     `💳 *${c.card_number}*\n` +
-    `余额: ${cs(c.currency)}${Number(c.balance).toFixed(2)}\n` +
+    `余额: ${money(c.currency, c.balance)}\n` +
     `状态: ${c.status === 'active' ? '✅ 正常' : '🔒 封禁'}` +
     (c.cardholder ? `\n持卡人: ${c.cardholder}` : '') +
     (c.expires_at ? `\n有效期: ${(() => { const p = c.expires_at.slice(0,7).split('-'); return `${p[1]}/${p[0]}` })()}` : '') +
@@ -150,7 +150,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}\n余额：${cs(t.currency)}${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${money(t.currency, t.amount, true)}\n余额：${money(t.currency, t.balance_after)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -218,7 +218,7 @@ function registerHandlers(bot: Bot) {
       : db.transactions.listByOwner(user.id).slice(0, 10)
     if (!txns.length) { await ctx.reply('暂无交易记录。'); return }
     await ctx.reply(txns.map((t: any) =>
-      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}\n余额: ${cs(t.currency)}${Number(t.balance_after).toFixed(2)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
+      `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.card_number} ${money(t.currency, t.amount, true)}\n余额: ${money(t.currency, t.balance_after)}${t.note ? `  ${t.note}` : ''}\n🕐 ${fmtDate(t.created_at)}`
     ).join('\n\n'))
   })
 
@@ -241,7 +241,7 @@ function registerHandlers(bot: Bot) {
     const txns = db.transactions.listByCard(card.id).slice(0, 5)
     const txnText = txns.length
       ? '\n\n最近交易:\n' + txns.map((t: any) =>
-          `${t.type === 'deduct' ? '🔴' : '🟢'} ${t.amount > 0 ? '+' : ''}${cs(t.currency)}${Number(t.amount).toFixed(2)}${t.note ? `  ${t.note}` : ''}  🕐 ${fmtDate(t.created_at)}`
+          `${t.type === 'deduct' ? '🔴' : '🟢'} ${money(t.currency, t.amount, true)}${t.note ? `  ${t.note}` : ''}  🕐 ${fmtDate(t.created_at)}`
         ).join('\n')
       : '\n\n暂无交易记录'
     await ctx.reply(fmtCards([card]) + txnText)
@@ -272,7 +272,7 @@ function registerHandlers(bot: Bot) {
     const newBalance = Number(card.balance) + amount
     db.cards.updateBalance(card.id, newBalance)
     db.transactions.create(card.id, 'topup', amount, newBalance, noteParts.join(' ') || 'TG充值', admin.id)
-    await ctx.reply(`✅ 充值成功\n卡号: ${card.card_number}\n金额: +${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${cs(card.currency)}${newBalance.toFixed(2)}`)
+    await ctx.reply(`✅ 充值成功\n卡号: ${card.card_number}\n金额: +${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${money(card.currency, newBalance)}`)
   })
 
   bot.command('deduct', async (ctx) => {
@@ -288,10 +288,14 @@ function registerHandlers(bot: Bot) {
     const card = cards[0]
     if (card.status !== 'active') { await ctx.reply('该卡已封禁，无法操作。'); return }
     const newBalance = Number(card.balance) - amount
-    if (newBalance < 0) { await ctx.reply(`余额不足，当前余额: ${cs(card.currency)}${Number(card.balance).toFixed(2)}`); return }
+    // Bitnob 卡余额由远端 API 托管，不允许扣成负数；本地手动卡允许透支。
+    if (card.provider === 'bitnob' && newBalance < 0) {
+      await ctx.reply(`余额不足，当前余额: ${cs(card.currency)}${Number(card.balance).toFixed(2)}`)
+      return
+    }
     db.cards.updateBalance(card.id, newBalance)
     db.transactions.create(card.id, 'deduct', -amount, newBalance, noteParts.join(' ') || 'TG扣款', admin.id)
-    await ctx.reply(`✅ 扣款成功\n卡号: ${card.card_number}\n金额: -${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${cs(card.currency)}${newBalance.toFixed(2)}`)
+    await ctx.reply(`✅ 扣款成功\n卡号: ${card.card_number}\n金额: -${cs(card.currency)}${amount.toFixed(2)}\n新余额: ${money(card.currency, newBalance)}`)
   })
 
   bot.command('block', async (ctx) => {

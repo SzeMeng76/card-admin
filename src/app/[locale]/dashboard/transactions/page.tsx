@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input, Label } from '@/components/ui/input'
-import { cs } from '@/lib/currency'
+import { money } from '@/lib/currency'
 
 interface Transaction {
   id: number
@@ -332,9 +332,9 @@ export default function TransactionsPage() {
                   </span>
                 </td>
                 <td className={`px-4 py-3 font-medium ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {tx.amount > 0 ? '+' : ''}{cs(tx.currency)}{Number(tx.amount).toFixed(2)}
+                  {money(tx.currency, tx.amount, true)}
                 </td>
-                <td className="px-4 py-3">{cs(tx.currency)}{Number(tx.balance_after).toFixed(2)}</td>
+                <td className="px-4 py-3">{money(tx.currency, tx.balance_after)}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{tx.note || '—'}</td>
                 <td className="px-4 py-3 text-zinc-500 text-xs">{tx.created_by_name || '—'}</td>
                 <td className="px-4 py-3 text-zinc-400 text-xs">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}</td>
@@ -365,10 +365,10 @@ export default function TransactionsPage() {
                 </span>
               </div>
               <div className={`text-lg font-medium mb-2 ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                {tx.amount > 0 ? '+' : ''}{cs(tx.currency)}{Number(tx.amount).toFixed(2)}
+                {money(tx.currency, tx.amount, true)}
               </div>
               <div className="grid grid-cols-2 gap-y-1 text-xs text-zinc-500 mb-3">
-                <div>{t('transactions.balanceAfter')}: <span className="text-zinc-700">{cs(tx.currency)}{Number(tx.balance_after).toFixed(2)}</span></div>
+                <div>{t('transactions.balanceAfter')}: <span className="text-zinc-700">{money(tx.currency, tx.balance_after)}</span></div>
                 <div className="text-right">{new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleDateString()}</div>
                 {tx.owner_name && (
                   <div className="col-span-2">
