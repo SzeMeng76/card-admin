@@ -151,8 +151,9 @@ export default function CardDetailPage() {
                     {tx.type === 'topup' ? t('transactions.topup') : tx.type === 'deduct' ? t('transactions.deduct') : t('transactions.manual')}
                   </p>
                   <p className="text-xs text-zinc-400 truncate">
-                    {tx.note || new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}
+                    {new Date(tx.created_at.endsWith('Z') ? tx.created_at : tx.created_at + 'Z').toLocaleString()}
                   </p>
+                  {tx.note && <p className="text-xs text-zinc-400 truncate">{tx.note}</p>}
                 </div>
                 <div className="text-right shrink-0">
                   <p className={`text-sm font-semibold ${isPositive ? 'text-emerald-600' : 'text-rose-600'}`}>
